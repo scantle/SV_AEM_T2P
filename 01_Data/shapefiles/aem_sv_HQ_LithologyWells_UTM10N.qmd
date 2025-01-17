@@ -1,0 +1,55 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.24.1-Tisler">
+  <identifier>WO2_HQ_LithologyWells</identifier>
+  <parentidentifier></parentidentifier>
+  <language>ENG</language>
+  <type>dataset</type>
+  <title>WO2_HQ_LithologyWells</title>
+  <abstract>Geophysical wells: Location of wells with geophysical data compiled by RAS and Eclogite.
+Lithology wells: Location of wells with lithologic information compiled by AECOM and DWR (OSWCR).
+Depth to water: Location of wells with water level data, compiled from DWR’s EWM database.
+Water quality: Location of wells with water quality data including TDS and conductivity (if applicable), compiled from SWRCB’s GAMA database.
+Filter by definition query
+
+
+</abstract>
+  <contact>
+    <contactAddress>
+      <type>both</type>
+      <address>2868 Prospect Park Drive, Suite 400</address>
+      <city>Rancho Cordova</city>
+      <administrativearea>CA</administrativearea>
+      <postalcode>95670</postalcode>
+      <country></country>
+    </contactAddress>
+    <name></name>
+    <organization>GEI Consultants, Inc</organization>
+    <position></position>
+    <voice>(916) 631-4500</voice>
+    <fax></fax>
+    <email>gis@geiconsultants.com</email>
+    <role>Point of contact</role>
+  </contact>
+  <links/>
+  <fees></fees>
+  <constraints type="Limitations of use">The information contained herein is based on the most current information available to GEI Consultants, Inc. GEI does not warrant its accuracy or suitability for any particular purpose. This data is not intended to replace engineering, financial, or primary records research. This data is part of an ongoing process of data creation and verification; therefore it is constantly changing. Every attempt has been made to keep the data as current and accurate as possible, but it cannot be considered an authoritative source of data.</constraints>
+  <constraints type="Limitations of use">The information contained herein is based on the most current information available to GEI Consultants, Inc. GEI does not warrant its accuracy or suitability for any particular purpose. This data is not intended to replace engineering, financial, or primary records research. This data is part of an ongoing process of data creation and verification; therefore it is constantly changing. Every attempt has been made to keep the data as current and accurate as possible, but it cannot be considered an authoritative source of data.
+</constraints>
+  <encoding></encoding>
+  <crs>
+    <spatialrefsys nativeFormat="Wkt">
+      <wkt>PROJCRS["NAD83(2011) / California Albers",BASEGEOGCRS["NAD83(2011)",DATUM["NAD83 (National Spatial Reference System 2011)",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",6318]],CONVERSION["California Albers",METHOD["Albers Equal Area",ID["EPSG",9822]],PARAMETER["Latitude of false origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8821]],PARAMETER["Longitude of false origin",-120,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8822]],PARAMETER["Latitude of 1st standard parallel",34,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8823]],PARAMETER["Latitude of 2nd standard parallel",40.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8824]],PARAMETER["Easting at false origin",0,LENGTHUNIT["metre",1],ID["EPSG",8826]],PARAMETER["Northing at false origin",-4000000,LENGTHUNIT["metre",1],ID["EPSG",8827]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["State-wide spatial data management."],AREA["United States (USA) - California."],BBOX[32.53,-124.45,42.01,-114.12]],ID["EPSG",6414]]</wkt>
+      <proj4>+proj=aea +lat_0=0 +lon_0=-120 +lat_1=34 +lat_2=40.5 +x_0=0 +y_0=-4000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+      <srsid>28529</srsid>
+      <srid>6414</srid>
+      <authid>EPSG:6414</authid>
+      <description>NAD83(2011) / California Albers</description>
+      <projectionacronym>aea</projectionacronym>
+      <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
+      <geographicflag>false</geographicflag>
+    </spatialrefsys>
+  </crs>
+  <extent>
+    <spatial miny="41.01066500000000303" dimensions="2" maxy="42.00586500000000001" maxz="0" maxx="-120.93797000000000708" minx="-122.98953799999999603" minz="0" crs="EPSG:6414"/>
+  </extent>
+</qgis>

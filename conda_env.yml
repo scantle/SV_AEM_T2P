@@ -1,0 +1,18 @@
+name: SV_AEM_T2P
+channels:
+  - conda
+  - conda-forge
+dependencies:
+  - matplotlib
+  - seaborn
+  - numpy
+  - pandas
+  - geopandas
+  - pathlib
+  - tqdm
+  - pykrige
+  - scipy
+  - scikit-learn
+  - statsmodels >= 0.14
+  - flopy
+  - kmodes
