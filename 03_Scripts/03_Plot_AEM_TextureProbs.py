@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use("TkAgg")
 
 import numpy as np
 import pandas as pd
@@ -11,11 +11,11 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 import os
-os.chdir("./03_Scripts/")
+os.chdir("03_Scripts/")
 
 import sys
 sys.path.append('./')
-from aem_plot.utils import df2rectangles, plot_slice_rect, plot_doi, plot_wl
+from aem_plot.utils import df2rectangles, plot_slice_rect, plot_slice_rect_doi, plot_line_by_depth, plot_wl
 from aem_read import read_xyz, aem_wide2long, calc_line_geometry
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -133,6 +133,7 @@ aem_long = aem_long.dropna(subset='BOT_ELEV')
 #-- Get Rectangles
 aem_long['AEMRect'] = df2rectangles(aem_long, x_col='LINE_DIST', y_col='BOT_ELEV',
                                xthk_col='LINE_WIDTH', ythk_col='THK')
+aem_long['doi_elev'] = aem_long['ELEVATION'] - aem_long['DOI_CONSERVATIVE']
 
 print('Starting Plotting...')
 #plt.style.use('seaborn-v0_8-dark')
@@ -166,18 +167,19 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
     cb_list = []
 
     #-- Rho
-    ln1, cb = plot_slice_rect(fig, axd['p1'], rect=df.AEMRect, values=df.RHO_I, cmap='turbo',
-                    title=f'Flight Line: {lne}',
-                    xlim=(line_min, line_max),
-                    ylim=ylim,
-                    ylabel='Elevation (m)',
-                    colorbar_label='Resistivity (ohm-m)', hide_xticks=True)
+    ln1, cb = plot_slice_rect_doi(fig, axd['p1'], rect=df.AEMRect, values=df.RHO_I, doi_values=df.doi_elev,
+                                  cmap='turbo',
+                                  title=f'Flight Line: {lne}',
+                                  xlim=(line_min, line_max),
+                                  ylim=ylim,
+                                  ylabel='Elevation (m)',
+                                  colorbar_label='Resistivity (ohm-m)', hide_xticks=True)
     cb_list.append(cb)
-    plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
-    plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
+    #plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
+    #plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
     # plot_wl(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'aemwlidw', 'ELEVATION', fmt='r--')
-    plot_wl(axd['p1'], df, 'LINE_DIST', 'bot1', None, fmt='g--', width_col='LINE_WIDTH', center=True)
-    plot_wl(axd['p1'], df, 'LINE_DIST', 'bot2', None, fmt='g--', width_col='LINE_WIDTH', center=True)
+    #plot_wl(axd['p1'], df, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
+    #plot_wl(axd['p1'], df, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
 
     #-- Loop over Textures
     for i, tex in enumerate(tex_classes):
@@ -187,10 +189,10 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                         ylabel='Elevation (m)',
                         colorbar_label=f'{tex} Prob.', hide_xticks=True, clim=(0,1))
         cb_list.append(cb)
-        plot_doi(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
-        plot_doi(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
-        # plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot1', None, fmt='g--', width_col='LINE_WIDTH', center=True)
-        plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot2', None, fmt='g--', width_col='LINE_WIDTH', center=True)
+        #plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
+        #plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
+        #plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
+        #plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
 
     #-- Show line on map
     aem_line_shp[aem_line_shp['SUBLINE_NO']==lne].plot(color='black', ax=axd['map'])
