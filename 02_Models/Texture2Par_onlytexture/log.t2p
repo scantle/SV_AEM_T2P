@@ -1,0 +1,40 @@
+    _________   _______  ________
+--|\___   ___\/  ___  \|\   __  \ ----
+   \|___ \  \_/__/|_/  /\ \  \|\  \
+------- \ \  \|__|//  / /\ \   ____\----
+         \ \  \   /  /_/__\ \  \___|
+--------- \ \__\ |\________\ \__\ --------
+           \|__|  \|_______|\|__|
+ 
+             Texture2Par v2.0.0
+----------------------------------------------
+Copyright S.S. Papadopulos & Associates Inc.
+ 
+Started at: 2025-01-27 17:11:20
+Reading Input Files
+Opening file svihm.t2p for reading.
+Opening file logs_and_AEM_5classes.dat for reading.
+ 
+Elapsed time:  0 seconds.
+ 
+--- INPUT SUMMARY ---
+ Total Data Classes:                          5
+ Texture Data Classes:                        5
+ Covariate Data Classes:                      0
+ Number of Dataset Files:                     1
+ Number of HSUs:                              1
+ Number of Variograms:                        5
+ Number of Model Cells (All Layers)      184800
+ Number of Model Layers                       2
+ Max Variogram Structures:                    1
+ No Data Value:                         -999.00
+ IDW Power Value:                          2.00
+ Max Secondary Data Dist:                  0.00
+ Max Outside Bounds Dist:                  0.00
+ Interpolation Method:                 Ordinary Kriging (OK)
+ Interpolation Order:                  BEFORE
+ Realization Number:                              0
+ Random Seed Number:                      126322567
+ Logical Options Set to TRUE:          ONLY_TEXTURE,WRITE_NONE,WRITE_NODE_FILES,WRITE_DATASET_FILES,
+Interpolating Datasets to MODFLOW Grid
+  - Layer:            1

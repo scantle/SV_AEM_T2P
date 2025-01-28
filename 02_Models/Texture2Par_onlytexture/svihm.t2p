@@ -1,0 +1,46 @@
+*==============================================================================
+* Texture2Par Main Input File
+*==============================================================================
+
+BEGIN OPTIONS
+  # Required Options
+  MAX_VSTRUCT    1
+  WRITE_NODE_FILES
+  WRITE_DATASET_FILES
+  ONLY_TEXTURE
+END OPTIONS
+
+BEGIN FLOW_MODEL
+  TYPE MODFLOW
+  NAM_FILE      ../SVIHM_MF/SVIHM.nam
+  TEMPLATE_FILE SVIHM_TEMPLATE.upw
+  XOFFSET       499977.0 
+  YOFFSET       4571330.0
+  ROTATION      0.0
+END FLOW_MODEL
+
+BEGIN CLASSES
+  Fine
+  Mixed_Fine
+  Sand
+  Mixed_Coarse
+  Very_Coarse
+END CLASSES
+
+BEGIN DATASET
+  FILE     logs_and_AEM_5classes.dat
+END DATASET
+
+BEGIN VARIOGRAMS
+  # Structure Vtype  Nugget  Sill  Range_min Range_max ang1  nnear
+  CLASS Fine                                              
+           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
+  CLASS Mixed_Fine                                              
+           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
+  CLASS Sand                                              
+           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
+  CLASS Mixed_Coarse                                              
+           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
+  CLASS Very_Coarse                                              
+           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
+END VARIOGRAMS
