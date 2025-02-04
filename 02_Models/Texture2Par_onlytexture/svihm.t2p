@@ -8,6 +8,7 @@ BEGIN OPTIONS
   WRITE_NODE_FILES
   WRITE_DATASET_FILES
   ONLY_TEXTURE
+  USE_MODEL_GSE
 END OPTIONS
 
 BEGIN FLOW_MODEL
@@ -33,14 +34,14 @@ END DATASET
 
 BEGIN VARIOGRAMS
   # Structure Vtype  Nugget  Sill  Range_min Range_max ang1  nnear
-  CLASS Fine                                              
-           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
-  CLASS Mixed_Fine                                              
-           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
-  CLASS Sand                                              
-           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
-  CLASS Mixed_Coarse                                              
-           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
-  CLASS Very_Coarse                                              
-           1    Sph    0.00   1.0    1.5E4       1.5E4  0.0    100
+  CLASS Fine
+           1    Exp    0.047   0.086    3.14E+03       3.14E+03  0.0    32
+  CLASS Mixed_Fine
+           1    Exp    0.059   0.048    1.09E+03       1.09E+03  0.0    32
+  CLASS Sand
+           1    Exp    0.041   0.024    5.57E+02       5.57E+02  0.0    32
+  CLASS Mixed_Coarse
+           1    Exp    0.047   0.066    4.16E+02       4.16E+02  0.0    32
+  CLASS Very_Coarse
+           1    Exp    0.040   0.107    1.33E+03       1.33E+03  0.0    32
 END VARIOGRAMS

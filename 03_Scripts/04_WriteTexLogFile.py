@@ -38,16 +38,16 @@ def reclassify_texture(intv):
         tex = 'Fine'
     # Cluster 1
     elif tex in ['clay','silt','loam','top soil']:
-        tex = 'Mixed_fine'
+        tex = 'Mixed_Fine'
     # Cluster 2
     elif tex in ['sand']:
         tex = 'Sand'
     # Cluster 3
     elif tex in ['gravel','rock','cobbles']:
-        tex = 'Mixed_coarse'
+        tex = 'Mixed_Coarse'
     # Cluster 4
     elif tex in ['boulders','sandstone','lava','lime']:
-        tex = 'Very_coarse'
+        tex = 'Very_Coarse'
     # elif tex == 'unknown':
     #     tex = -999
     else:
