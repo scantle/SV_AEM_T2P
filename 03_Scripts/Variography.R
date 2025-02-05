@@ -1,5 +1,6 @@
 library(gstat)
 library(sp)
+library(sf)
 library(ggplot2)
 library(dplyr)
 
@@ -11,13 +12,21 @@ classes <- c('FINE','MIXED_FINE','SAND','MIXED_COARSE','VERY_COARSE')
 wellfile <- 'logs_and_AEM_5classes.dat'
 
 output_file <- './05_Outputs/fitted_variograms.txt'
-
+output_shapefile <- './01_Data/shapefiles/t2p_logs_and_AEM.shp'
 #-------------------------------------------------------------------------------------------------#
 
 #-------------------------------------------------------------------------------------------------#
 #-- Read in wells file for x,y
 locs <- read.table(file.path(mdir,wellfile), header=T, stringsAsFactors = F)
 locs <- unique(locs[,c('Line','ID','X','Y')])
+#
+# wells_sf <- st_as_sf(locs, coords = c("X", "Y"), crs = 26910)
+#
+# # Write to a shapefile
+# st_write(wells_sf, output_shapefile, delete_layer = TRUE)
+#
+# # Print confirmation
+# cat("Shapefile written to:", output_shapefile, "\n")
 
 #-- Loop over classes
 tex <- lapply(classes, function(class){
@@ -59,7 +68,7 @@ plot(vgm_mf_emp, vgm_mf_model, main = "MIXED_FINE Texture Variogram")
 
 #-------------------------------------------------------------------------------------------------#
 # SAND Texture Class
-vgm_sand_emp <- variogram(value ~ 1, data = tex[["SAND"]], width=600)
+vgm_sand_emp <- variogram(value ~ 1, data = tex[["SAND"]], width=300)
 vgm_sand_model <- vgm(model = "Exp", nugget = 0, range = 1000, psill = 0.2)
 vgm_sand_model <- fit.variogram(vgm_sand_emp, vgm_sand_model)
 plot(vgm_sand_emp, vgm_sand_model, main = "SAND Texture Variogram")
@@ -114,23 +123,28 @@ params_df$label <- with(params_df, paste0(
 #-------------------------------------------------------------------------------------------------#
 #-- Get Plotting
 
+# Define the intended order (because GGPLOT loves alphabetizing)
+texture_order <- c("FINE", "MIXED_FINE", "SAND", "MIXED_COARSE", "VERY_COARSE")
+
 # Combine empirical variogram data into a single dataframe
 empirical_df <- bind_rows(
-  mutate(vgm_fine_emp, texture = "FINE"),
-  mutate(vgm_mf_emp, texture = "MIXED_FINE"),
-  mutate(vgm_sand_emp, texture = "SAND"),
-  mutate(vgm_mc_emp, texture = "MIXED_COARSE"),
-  mutate(vgm_vc_emp, texture = "VERY_COARSE")
+  mutate(vgm_fine_emp, texture = factor("FINE", levels = texture_order)),
+  mutate(vgm_mf_emp, texture = factor("MIXED_FINE", levels = texture_order)),
+  mutate(vgm_sand_emp, texture = factor("SAND", levels = texture_order)),
+  mutate(vgm_mc_emp, texture = factor("MIXED_COARSE", levels = texture_order)),
+  mutate(vgm_vc_emp, texture = factor("VERY_COARSE", levels = texture_order))
 )
 
 # Combine fitted variogram models into a single dataframe
 fitted_df <- bind_rows(
-  mutate(variogramLine(vgm_fine_model, maxdist = max(vgm_fine_emp$dist)), texture = "FINE"),
-  mutate(variogramLine(vgm_mf_model, maxdist = max(vgm_mf_emp$dist)), texture = "MIXED_FINE"),
-  mutate(variogramLine(vgm_sand_model, maxdist = max(vgm_sand_emp$dist)), texture = "SAND"),
-  mutate(variogramLine(vgm_mc_model, maxdist = max(vgm_mc_emp$dist)), texture = "MIXED_COARSE"),
-  mutate(variogramLine(vgm_vc_model, maxdist = max(vgm_vc_emp$dist)), texture = "VERY_COARSE")
+  mutate(variogramLine(vgm_fine_model, maxdist = max(vgm_fine_emp$dist)), texture = factor("FINE", levels = texture_order)),
+  mutate(variogramLine(vgm_mf_model, maxdist = max(vgm_mf_emp$dist)), texture = factor("MIXED_FINE", levels = texture_order)),
+  mutate(variogramLine(vgm_sand_model, maxdist = max(vgm_sand_emp$dist)), texture = factor("SAND", levels = texture_order)),
+  mutate(variogramLine(vgm_mc_model, maxdist = max(vgm_mc_emp$dist)), texture = factor("MIXED_COARSE", levels = texture_order)),
+  mutate(variogramLine(vgm_vc_model, maxdist = max(vgm_vc_emp$dist)), texture = factor("VERY_COARSE", levels = texture_order))
 )
+
+params_df$texture <- factor(params_df$texture, levels = texture_order)
 
 # Plot with annotated variogram parameters
 ggplot(empirical_df, aes(x = dist, y = gamma, color = texture)) +
