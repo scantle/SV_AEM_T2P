@@ -34,10 +34,10 @@ tex <- lapply(classes, function(class){
   layavg <- read.table(file.path(mdir, fname),header = T)
   layavg <- merge(layavg, locs, by.x='Well', by.y='ID')
   layavg_long <- data.frame(
-    X = rep(layavg$X, 2),
-    Y = rep(layavg$Y, 2),
+    X = layavg$X,
+    Y = layavg$Y,
     texture = class,
-    value = c(layavg$X1)
+    value = layavg$X1
   )
   # Remove rows where value is -999 (missing data)
   layavg_long <- layavg_long[layavg_long$value >= 0.0,]
@@ -53,7 +53,7 @@ tex <- setNames(tex, classes)
 #-------------------------------------------------------------------------------------------------#
 # FINE Texture Class
 vgm_fine_emp <- variogram(value ~ 1, data = tex[["FINE"]], width=600)
-vgm_fine_model <- vgm(model = "Exp", nugget = 0.0, range = 6480, psill = 0.075)
+vgm_fine_model <- vgm(model = "Exp", nugget = 0.0, range = 3000, psill = 0.1)
 vgm_fine_model <- fit.variogram(vgm_fine_emp, vgm_fine_model)
 plot(vgm_fine_emp, vgm_fine_model, main = "FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -61,7 +61,7 @@ plot(vgm_fine_emp, vgm_fine_model, main = "FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # MIXED_FINE Texture Class
 vgm_mf_emp <- variogram(value ~ 1, data = tex[["MIXED_FINE"]], width=600)
-vgm_mf_model <- vgm(model = "Exp", nugget = 0.0, range = 700, psill = 0.15)
+vgm_mf_model <- vgm(model = "Exp", nugget = 0.0, range = 1000, psill = 0.15)
 vgm_mf_model <- fit.variogram(vgm_mf_emp, vgm_mf_model)
 plot(vgm_mf_emp, vgm_mf_model, main = "MIXED_FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -69,7 +69,7 @@ plot(vgm_mf_emp, vgm_mf_model, main = "MIXED_FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # SAND Texture Class
 vgm_sand_emp <- variogram(value ~ 1, data = tex[["SAND"]], width=300)
-vgm_sand_model <- vgm(model = "Exp", nugget = 0, range = 1000, psill = 0.2)
+vgm_sand_model <- vgm(model = "Exp", nugget = 0, range = 1000, psill = 0.1)
 vgm_sand_model <- fit.variogram(vgm_sand_emp, vgm_sand_model)
 plot(vgm_sand_emp, vgm_sand_model, main = "SAND Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -77,7 +77,7 @@ plot(vgm_sand_emp, vgm_sand_model, main = "SAND Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # MIXED_COARSE Texture Class
 vgm_mc_emp <- variogram(value ~ 1, data = tex[["MIXED_COARSE"]], width=500)
-vgm_mc_model <- vgm(model = "Exp", nugget = 0.0, range = 1200, psill = 0.12)
+vgm_mc_model <- vgm(model = "Exp", nugget = 0.0, range = 1000, psill = 0.1)
 vgm_mc_model <- fit.variogram(vgm_mc_emp, vgm_mc_model)
 plot(vgm_mc_emp, vgm_mc_model, main = "MIXED_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -85,7 +85,7 @@ plot(vgm_mc_emp, vgm_mc_model, main = "MIXED_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # VERY_COARSE Texture Class
 vgm_vc_emp <- variogram(value ~ 1, data = tex[["VERY_COARSE"]], width=600)
-vgm_vc_model <- vgm(model = "Exp", nugget = 0.0, range = 800, psill = 0.08)
+vgm_vc_model <- vgm(model = "Exp", nugget = 0.0, range = 1000, psill = 0.1)
 vgm_vc_model <- fit.variogram(vgm_vc_emp, vgm_vc_model)
 plot(vgm_vc_emp, vgm_vc_model, main = "VERY_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
