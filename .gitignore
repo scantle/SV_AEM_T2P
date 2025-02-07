@@ -174,3 +174,6 @@ cython_debug/
 *.chk
 04_Plots/*
 !04_Plots/github_readme.txt
+*.lst
+log.t2p
+t2p_*.out

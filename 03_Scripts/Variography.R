@@ -7,7 +7,7 @@ library(dplyr)
 #-------------------------------------------------------------------------------------------------#
 #-- Settings
 # setwd('C:/Users/lelan/Documents/CodeProjects/PhD_SV_AEM_T2P')
-mdir <- './02_Models/Texture2Par_onlytexture'
+mdir <- './02_Models/Texture2Par_onlytexture_1layer'
 classes <- c('FINE','MIXED_FINE','SAND','MIXED_COARSE','VERY_COARSE')
 wellfile <- 'logs_and_AEM_5classes.dat'
 
@@ -19,11 +19,11 @@ output_shapefile <- './01_Data/shapefiles/t2p_logs_and_AEM.shp'
 #-- Read in wells file for x,y
 locs <- read.table(file.path(mdir,wellfile), header=T, stringsAsFactors = F)
 locs <- unique(locs[,c('Line','ID','X','Y')])
-#
+
 # wells_sf <- st_as_sf(locs, coords = c("X", "Y"), crs = 26910)
 #
 # # Write to a shapefile
-# st_write(wells_sf, output_shapefile, delete_layer = TRUE)
+# st_write(wells_sf, output_shapefile, delete_layer = TRUE, shape_restore_shx=T)
 #
 # # Print confirmation
 # cat("Shapefile written to:", output_shapefile, "\n")
@@ -37,7 +37,7 @@ tex <- lapply(classes, function(class){
     X = rep(layavg$X, 2),
     Y = rep(layavg$Y, 2),
     texture = class,
-    value = c(layavg$X1, layavg$X2)
+    value = c(layavg$X1)
   )
   # Remove rows where value is -999 (missing data)
   layavg_long <- layavg_long[layavg_long$value >= 0.0,]
@@ -53,7 +53,7 @@ tex <- setNames(tex, classes)
 #-------------------------------------------------------------------------------------------------#
 # FINE Texture Class
 vgm_fine_emp <- variogram(value ~ 1, data = tex[["FINE"]], width=600)
-vgm_fine_model <- vgm(model = "Exp", nugget = 0.050, range = 6480, psill = 0.075)
+vgm_fine_model <- vgm(model = "Exp", nugget = 0.0, range = 6480, psill = 0.075)
 vgm_fine_model <- fit.variogram(vgm_fine_emp, vgm_fine_model)
 plot(vgm_fine_emp, vgm_fine_model, main = "FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -61,7 +61,7 @@ plot(vgm_fine_emp, vgm_fine_model, main = "FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # MIXED_FINE Texture Class
 vgm_mf_emp <- variogram(value ~ 1, data = tex[["MIXED_FINE"]], width=600)
-vgm_mf_model <- vgm(model = "Exp", nugget = 0.02, range = 700, psill = 0.15)
+vgm_mf_model <- vgm(model = "Exp", nugget = 0.0, range = 700, psill = 0.15)
 vgm_mf_model <- fit.variogram(vgm_mf_emp, vgm_mf_model)
 plot(vgm_mf_emp, vgm_mf_model, main = "MIXED_FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -77,7 +77,7 @@ plot(vgm_sand_emp, vgm_sand_model, main = "SAND Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # MIXED_COARSE Texture Class
 vgm_mc_emp <- variogram(value ~ 1, data = tex[["MIXED_COARSE"]], width=500)
-vgm_mc_model <- vgm(model = "Exp", nugget = 0.05, range = 1200, psill = 0.12)
+vgm_mc_model <- vgm(model = "Exp", nugget = 0.0, range = 1200, psill = 0.12)
 vgm_mc_model <- fit.variogram(vgm_mc_emp, vgm_mc_model)
 plot(vgm_mc_emp, vgm_mc_model, main = "MIXED_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -85,7 +85,7 @@ plot(vgm_mc_emp, vgm_mc_model, main = "MIXED_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # VERY_COARSE Texture Class
 vgm_vc_emp <- variogram(value ~ 1, data = tex[["VERY_COARSE"]], width=600)
-vgm_vc_model <- vgm(model = "Exp", nugget = 0.01, range = 800, psill = 0.08)
+vgm_vc_model <- vgm(model = "Exp", nugget = 0.0, range = 800, psill = 0.08)
 vgm_vc_model <- fit.variogram(vgm_vc_emp, vgm_vc_model)
 plot(vgm_vc_emp, vgm_vc_model, main = "VERY_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
