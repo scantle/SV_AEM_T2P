@@ -1,6 +1,6 @@
 ptf $
 nclasses 5                                         # Number of texture classes
-rho_log_file  ..\..\05_Outputs\AEMLog_noUnsat.dat  # Reading this
+rho_log_file  AEMLog_noUnsat.dat                   # Reading this
 tex_out_file  logs_and_AEM_5classes.dat            # Writing this
 prv_log_file  LithoLog_5classes_nocoloc.dat        # Will copy this over first (NONE if not needed)
         Texture       Shape    Location       Scale

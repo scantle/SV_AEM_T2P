@@ -1,7 +1,7 @@
 ptf $
-.\svihm\SVIHM_intermediate.sfr
-.\svihm\SVIHM.sfr
-.\svihm\SVIHM.upw
+.\MODFLOW\SVIHM_intermediate.sfr
+.\MODFLOW\SVIHM.sfr
+.\MODFLOW\SVIHM.upw
  2  440  210
 1	$ sbcm01          $
 2	$ sbcm02          $

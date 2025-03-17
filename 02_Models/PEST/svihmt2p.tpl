@@ -11,7 +11,7 @@ END OPTIONS
 
 BEGIN FLOW_MODEL
   TYPE MODFLOW
-  NAM_FILE      ../SVIHM_MF/SVIHM.nam
+  NAM_FILE      ../MODFLOW/SVIHM_t2p.nam
   TEMPLATE_FILE SVIHM_TEMPLATE.upw
   XOFFSET       499977.0 
   YOFFSET       4571330.0
@@ -59,7 +59,7 @@ BEGIN PP_PARAMETERS
 # ID    Class             Kmin             Kmax              Ss              Sy           Aniso     Kd
    1   Fine         $  KminFF1     $   $  KmaxFF1     $  $  SsFF1       $  $  SyFF1       $  $  AnisoFF1    $  0.007
    1   Mixed_Fine   $  KminMF1     $   $  KmaxMF1     $  $  SsMF1       $  $  SyMF1       $  $  AnisoMF1    $  0.007
-   1   Sand         $  KminSS1     $   $  KmaxSC1     $  $  SsSC1       $  $  SySC1       $  $  AnisoSC1    $  0.007
+   1   Sand         $  KminSC1     $   $  KmaxSC1     $  $  SsSC1       $  $  SySC1       $  $  AnisoSC1    $  0.007
    1   Mixed_Coarse $  KminMC1     $   $  KmaxMC1     $  $  SsMC1       $  $  SyMC1       $  $  AnisoMC1    $  0.007
    1   Very_Coarse  $  KminVC1     $   $  KmaxVC1     $  $  SsVC1       $  $  SyVC1       $  $  AnisoVC1    $  0.007
 END PP_PARAMETERS
