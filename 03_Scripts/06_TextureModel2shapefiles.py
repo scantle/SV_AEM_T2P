@@ -14,15 +14,15 @@ from pathlib import Path
 data_dir = Path('01_Data/')
 shp_dir = data_dir / 'shapefiles'
 out_dir = Path('05_Outputs')
-tex_file_dir = Path('02_Models/Texture2Par_onlytexture/')
+tex_file_dir = Path('02_Models/Texture2Par_onlytexture_2D/')
 
 # Texture files
 tex_files = {
-    'FINE': 't2p_FINE.out',
-    'MIXED_FINE': 't2p_MIXED_FINE.out',
-    'SAND': 't2p_SAND.out',
-    'MIXED_COARSE': 't2p_MIXED_COARSE.out',
-    'VERY_COARSE': 't2p_VERY_COARSE.out'
+    'FINE': 't2p_FINE.csv',
+    'MIXED_FINE': 't2p_MIXED_FINE.csv',
+    'SAND': 't2p_SAND.csv',
+    'MIXED_COARSE': 't2p_MIXED_COARSE.csv',
+    'VERY_COARSE': 't2p_VERY_COARSE.csv'
 }
 
 # Shapefiles
@@ -56,7 +56,7 @@ grid_lay1 = grid[grid['Layer']==1]
 grid_lay2 = grid[grid['Layer']==2]
 
 # Read and sum textures for each layer
-texture_data = {key: pd.read_csv(tex_file_dir / fname, sep='\\s+', na_values=-999) for key, fname in tex_files.items()}
+texture_data = {key: pd.read_csv(tex_file_dir / fname, na_values=-999) for key, fname in tex_files.items()}
 
 # Process each texture file
 layer1_df = None

@@ -20,7 +20,9 @@ dependencies:
   - scikit-learn
   - statsmodels >= 0.14
   - flopy
+  - pyemu
   - kmodes
+  - gstools
   - pip
   - pip:
       - git+https://github.com/scantle/t2py.git@main

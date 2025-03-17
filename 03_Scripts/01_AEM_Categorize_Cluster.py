@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import random
 import statsmodels.api as sm
 from pathlib import Path
 from tqdm import tqdm
@@ -19,7 +18,7 @@ from kmodes.kprototypes import KPrototypes
 
 import os
 os.chdir("./03_Scripts/")
-os.environ["OMP_NUM_THREADS"] = "8"
+os.environ["OMP_NUM_THREADS"] = "2"
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import pairwise_distances
@@ -32,13 +31,13 @@ from aem_read import read_xyz, aem_wide2long
 # -------------------------------------------------------------------------------------------------------------------- #
 # Settings
 # -------------------------------------------------------------------------------------------------------------------- #
-
 np.random.seed(1024)
 
 # Directories
 data_dir = Path('../01_Data/')
 shp_dir = data_dir / 'shapefiles'
 out_dir = Path('../05_Outputs')
+plt_dir = Path('../04_Plots/')
 
 # Files
 aem_sharp_file = data_dir / 'SCI_Sharp_10_West_I01_MOD_inv.xyz'
@@ -281,9 +280,13 @@ for i in range(overlapping_df.shape[0]):
 meta_cluster = AgglomerativeClustering(n_clusters=nmeta, metric='precomputed', linkage='complete')
 meta_cluster.fit(1 - similarity_matrix)  # Use dissimilarity
 
-#-- Reorder Clusters (Manually assigned, if re-run may need to be edited)
+#-- Reorder Clusters low to high
 overlapping_df['meta_cluster'] = meta_cluster.labels_
-overlapping_df['cluster'] = overlapping_df['meta_cluster'].replace({0: 3, 1: 0, 2: 2, 3: 1, 4: 4})
+cluster_means = overlapping_df.groupby('meta_cluster')['rho'].mean()
+cluster_order = cluster_means.rank(method='dense').astype(int)
+overlapping_df['cluster'] = overlapping_df['meta_cluster'].map(cluster_order.to_dict())
+
+#overlapping_df['cluster'] = overlapping_df['meta_cluster'].replace({0: 3, 1: 0, 2: 2, 3: 1, 4: 4})
 # -------------------------------------------------------------------------------------------------------------------- #
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -328,7 +331,7 @@ data_for_viz['cluster'] = overlapping_df['cluster']
 plt.style.use('default')
 sns.violinplot(x='cluster', y='rho', data=data_for_viz)
 plt.title('Violin Plot of rho by Cluster')
-
+plt.savefig(plt_dir / '01_violin_plot_rho_by_cluster.png', dpi=300, bbox_inches='tight')
 
 fig, axs = plt.subplots(nrows=len(columns_to_use), figsize=(10, 15))
 
@@ -338,6 +341,7 @@ for i, col in enumerate(columns_to_use):  # Skip 'rho'
     axs[i].legend(title=col, bbox_to_anchor=(1.05, 1), loc='upper left')
 
 plt.tight_layout()
+plt.savefig(plt_dir / '01_count_plots_by_cluster.png', dpi=300, bbox_inches='tight')
 
 # from sklearn.manifold import TSNE
 #
@@ -354,6 +358,7 @@ sns.heatmap(similarity_matrix, cmap='viridis', xticklabels=False, yticklabels=Fa
 plt.title('Similarity Matrix Heatmap')
 plt.xlabel('Clusters')
 plt.ylabel('Clusters')
+plt.savefig(plt_dir / '01_similarity_matrix_heatmap.png', dpi=300, bbox_inches='tight')
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
@@ -375,16 +380,16 @@ print("Average silhouette score for consensus clustering:", silhouette_avg)
 flat_similarity_scores = similarity_matrix[np.triu_indices_from(similarity_matrix, k=1)]
 sorted_scores = np.sort(flat_similarity_scores)
 
-# Calculate the CDF values
-cdf = np.arange(1, len(sorted_scores)+1) / len(sorted_scores)
-
-# Plotting the CDF
-plt.figure(figsize=(8, 6))
-plt.plot(sorted_scores, cdf, marker='.', linestyle='none')
-plt.xlabel('Similarity Score')
-plt.ylabel('CDF')
-plt.title('CDF of Updated Similarity Scores')
-plt.grid(True)
+# # Calculate the CDF values
+# cdf = np.arange(1, len(sorted_scores)+1) / len(sorted_scores)
+#
+# # Plotting the CDF
+# plt.figure(figsize=(8, 6))
+# plt.plot(sorted_scores, cdf, marker='.', linestyle='none')
+# plt.xlabel('Similarity Score')
+# plt.ylabel('CDF')
+# plt.title('CDF of Updated Similarity Scores')
+# plt.grid(True)
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
@@ -421,7 +426,7 @@ for id, loc in tqdm(aem_wells_use.iterrows()):
                 if intv['Texture'] in ['top soil', 'unknown'] : continue
                 cluster = overlapping_df.loc[overlapping_df.UID == intv.UID, 'cluster'].iloc[0]
                 thick = min(pixel['DEP_BOT'], intv['LITH_BOT_DEPTH_m']) - max(pixel['DEP_TOP'], intv['LITH_TOP_DEPTH_m'])
-                thicks[cluster] += thick
+                thicks[cluster-1] += thick
             # put in AEM cell class
             tex_list.append(AEMCell(rho_aem=pixel['RHO_I'],
                                     rho_std=pixel['RHO_I_STD'],
@@ -441,7 +446,7 @@ w = np.zeros(ensemble_size)
 
 # Bootstrap Solve
 for s in tqdm(range(0,1000)):
-    ensemble = random.choices(tex_list, k=ensemble_size)
+    ensemble = np.random.choice(tex_list, size=ensemble_size, replace=True)
 
     # Fill arrays
     for i, row in enumerate(ensemble):
@@ -465,7 +470,7 @@ for s in tqdm(range(0,1000)):
 # -------------------------------------------------------------------------------------------------------------------- #
 
 # Rename Clusters
-cluster_names = ['0 - Fine-grained', '1 - Mixed Fine', '2 - Sand', '3 - Mixed Coarse', '4 - Very Coarse']
+cluster_names = ['1 - Fine-grained', '2 - Mixed Fine', '3 - Sand', '4 - Mixed Coarse', '5 - Very Coarse']
 tex_names = [name.split('-')[1].strip().replace(' ','_') for name in cluster_names]
 
 # Loop over data adding to histogram, fit and save dist
@@ -482,7 +487,7 @@ for tex in sorted(rho_dict.keys(), key=lambda k: np.median(rho_dict[k])):  # by 
     ptch = hax.hist(rho_dict[tex], bins=bins, alpha=0.5, density=True, zorder=2, label=cluster_names[tex])
     hist_patches.extend(ptch[2])
 
-    if tex <3:
+    if tex<4:
         shape, loc, scale = lognorm.fit(rho_dict[tex], floc=0)
     else:
         shape, loc, scale = fit_lognormal_with_constraints(rho_dict[tex])
@@ -503,6 +508,7 @@ hax.set_xlabel(r'Resistivity (log scale), $\rho$', fontsize=15)
 hax.set_ylabel('Density', fontsize=15)
 hax.legend(fontsize=13, title='Texture Clusters', title_fontsize=15)
 hplt.tight_layout()
+plt.savefig(plt_dir / '01_histogram_resistivity_clusters.png', dpi=300, bbox_inches='tight')
 # -------------------------------------------------------------------------------------------------------------------- #
 
 # Write distribution parameter file
@@ -512,4 +518,40 @@ with open(out_dir / 'lognorm_dist_clustered.par', 'w') as f:
     f.write(f"{'Texture':>15}{'Shape':>12}{'Location':>12}{'Scale':>12}\n")
     for tex in fit_dists.keys():
         f.write(f"{tex_names[tex]:15}{fit_dists[tex][0]:12.6f}{fit_dists[tex][1]:12.6f}{fit_dists[tex][2]:12.6f}\n")
+# -------------------------------------------------------------------------------------------------------------------- #
+
+# Compute std dev of bootstrap mean estimates from rho_dict
+std_boot = {texture: np.std(rho_dict[texture]) for texture in rho_dict}
+
+n_samples = 497  # Actual dataset size
+z_score = 1.96  # 95% confidence interval
+
+results = []
+for tex, (shape, loc, scale) in fit_dists.items():
+    bootstrap_values = np.sort(rho_dict[tex])  # Sort bootstrap estimates
+
+    # Get 95% confidence bounds using percentiles
+    mean_low = np.percentile(bootstrap_values, 2.5)
+    mean_high = np.percentile(bootstrap_values, 97.5)
+
+    # Compute bounds for scale parameter
+    scale_min = (mean_low - loc) / np.exp((shape**2) / 2.0)
+    scale_max = (mean_high - loc) / np.exp((shape**2) / 2.0)
+
+    # Optionally expand range by ±10%
+    scale_min *= 0.9
+    scale_max *= 1.1
+
+    results.append((tex, scale_min, scale_max))
+
+# Print results
+print(f"{'Texture':<15} {'Scale Min':>10} {'Scale Max':>10}")
+for r in results:
+    print(f"{r[0]:<15} {r[1]:10.2f} {r[2]:10.2f}")
+
+with open(out_dir / 'lognorm_dist_clustered_scale_ranges.dat', 'w') as f:
+    f.write(f"{'Texture':>15}{'ScaleMin':>12}{'ScaleMax':>12}\n")
+    for i, r in enumerate(results):
+        f.write(f"{tex_names[i]:15} {r[1]:10.2f} {r[2]:10.2f}\n")
+
 # -------------------------------------------------------------------------------------------------------------------- #

@@ -27,6 +27,8 @@ sv_model_domain_file = shp_dir / 'Model_Domain_20180222.shp'
 # Inclusion Radius
 svihm_buffer = 500   # meters
 
+tailings_issue_logs = [18416, 18424, 18223, 18528, 18339]
+
 # -------------------------------------------------------------------------------------------------------------------- #
 # Classes/Functions
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -163,6 +165,12 @@ plt.ylabel('Total Interval Thickness (m)', fontsize=12)
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
 plt.show()
+
+# Adjust some tailings logs that are skewing the south tailings area "fine"
+# We know this area to actually be very, very coarse
+# Some of the logs mention "fractured shale" although from site visits the area modeled is large cobbles...
+# More investigation needed...
+litho.loc[litho.WELL_INFO_ID.isin(tailings_issue_logs), 'tex_rev'] = 'Very_Coarse'
 
 # Setup for t2py
 #litho['Name'] = litho.agg(lambda x: f"{x['WELL_INFO_ID']:g}_{x['LITH_ID']:g}", axis=1)
