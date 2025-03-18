@@ -144,19 +144,20 @@ def balance_metagroup_weights(obs_df, metagroup_col="metagroup", target_weights=
 # Parameter lists are [low, high, default, group]
 # unless tied ['tied', tied_parameter, group] or fixed ['fixed', value, group]
 
+
 # Texture2Par Parameters
 t2p_parameters = {
-    'KminFF1'   : [1e-7, 10.0, 1.0, 'K'],
-    'KminMF1_M' : [0.9, 100.0, 3.0, 'K'],
-    'KminSC1_M' : [0.9, 100.0, 3.0, 'K'],
-    'KminMC1_M' : [0.9, 100.0, 10.0, 'K'],
+    'KminFF1'   : [1e-7, 10.0, 5.0, 'K'],
+    'KminMF1_M' : [0.9, 100.0, 10.0, 'K'],
+    'KminSC1_M' : [0.9, 100.0, 2.0, 'K'],
+    'KminMC1_M' : [0.9, 100.0, 1.0, 'K'],
     'KminVC1_M' : [0.9, 100.0, 10.0, 'K'],
-    'AnisoVC1'  : [1.0, 10.0, 10.0, 'Aniso'],
-    'AnisoMC1_M': [1.0, 10.0, 10.0, 'Aniso'],
+    'AnisoVC1'  : [1.0, 10.0, 5.0, 'Aniso'],
+    'AnisoMC1_M': [1.0, 10.0, 5.0, 'Aniso'],
     'AnisoSC1_M': [1.0, 10.0,  1.0, 'Aniso'],
     'AnisoMF1_M': [1.0, 10.0,  1.0, 'Aniso'],
     'AnisoFF1_M': [1.0, 10.0,  1.0, 'Aniso'],
-    'SsFF1'     : [1e-04, 1e-2, 1e-3, 'Ss'],
+    'SsFF1'     : [1e-5, 1e-2, 1e-4, 'Ss'],
     'SsMF1_M'   : [0.1, 1.0, 0.45, 'Ss'],
     'SsSC1_M'   : [0.1, 1.0, 0.45, 'Ss'],
     'SsMC1_M'   : [0.1, 1.0, 0.45, 'Ss'],
@@ -176,38 +177,37 @@ print(t2p_reality_check)
 
 # Add SFR2PAR segment multipliers
 sfr_parameters = {
-    'sbcm01': [0.01, 100, 0.8, 'mSFR'],
+    'sbcm01': [0.1, 10, 1.0, 'mSFR'],
     'sbcm02': ['tied','sbcm01', 'mSFR'],
     'sbcm03': ['tied','sbcm01', 'mSFR'],
     'sbcm04': ['tied','sbcm01', 'mSFR'],
-    'sbcm05': [0.01, 100, 0.8, 'mSFR'],
-    'sbcm06': [0.01, 100, 0.8, 'mSFR'],
+    'sbcm05': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm06': [0.1, 10, 1.0, 'mSFR'],
     'sbcm07': ['tied','sbcm06', 'mSFR'],
     'sbcm08': ['tied','sbcm06', 'mSFR'],
-    'sbcm09': [0.01, 100, 0.8, 'mSFR'],
+    'sbcm09': [0.1, 10, 1.0, 'mSFR'],
     'sbcm10': ['tied','sbcm09', 'mSFR'],
-    'sbcm11': [0.01, 100, 0.8, 'mSFR'],
-    'sbcm12': [0.01, 100, 0.8, 'mSFR'],
-    'sbcm13': [0.01, 100, 0.8, 'mSFR'],
-    'sbcm14': [0.01, 100, 0.8, 'mSFR'],
-    'sbcm15': [0.01, 100, 0.8, 'mSFR'],
+    'sbcm11': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm12': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm13': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm14': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm15': [0.1, 10, 1.0, 'mSFR'],
     'sbcm16': ['tied','sbcm15', 'mSFR'],
-    'sbcm17': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm18': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm19': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm20': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm21': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm22': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm23': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm24': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm25': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm26': [0.01, 100, 0.1, 'mSFR'],
-    'sbcm27': [0.01, 100, 0.1, 'mSFR'],
+    'sbcm17': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm18': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm19': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm20': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm21': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm22': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm23': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm24': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm25': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm26': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm27': [0.1, 10, 1.0, 'mSFR'],
     'sbcm28': ['tied','sbcm27', 'mSFR'],
     'sbcm29': ['tied','sbcm27', 'mSFR'],
-    'sbcm30': [0.01, 100, 0.8, 'mSFR'],
+    'sbcm30': [0.1, 10, 1.0, 'mSFR'],
 }
-
 # Read in texture distribution parameters
 tex_dist_params = pd.read_table(tex_dists_file, sep="\\s+", skiprows=1)
 tex_scale_ranges = pd.read_table(tex_scale_range_file, sep="\\s+")  # 95% confidence intervals
@@ -340,14 +340,15 @@ metagroup_mapping = {
 # Assign metagroup labels
 obs_df["metagroup"] = obs_df["obsgnme"].map(metagroup_mapping)
 
-obs_df = balance_metagroup_weights(obs_df)
+target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
+obs_df = balance_metagroup_weights(obs_df, target_weights={'HEADS':target_weight, 'STREAMFLOW':target_weight/10000})
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup PEST
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Switch to folder PEST will run in
-os.chdir('C:/Projects/SVIHM/2024_PEST_t2pcalib/')
+os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/')
 
 # Write INS files
 write_ts_ins_file(str_fj, origin_date, '86:99', 2, 'Streamflow_FJ_SVIHM.ins')
@@ -360,7 +361,7 @@ write_hobs_ins_file(hobs_df, 'HobData_SVIHM.ins')
 # Let pyemu detect all observations & parameters, it serves as a check on everything we're doing
 # We can then update the groups, weights, values, etc
 pst = pyemu.Pst.from_io_files(tpl_files=['t2p_par2par.tpl',
-                                         'sfr2par.tpl',
+                                         'sfr2par_noUPW.tpl',
                                          'AEM2Texture.tpl'],
                               in_files=[Path('./SVIHM/t2p_par2par.in'),
                                         Path('./SVIHM/sfr2par.in'),
@@ -399,8 +400,9 @@ for param, value in pest_parameters.items():
     if value[0] == 'tied':
         pst.parameter_data.loc[param.lower(), 'partrans'] = 'tied'
         pst.parameter_data.loc[param.lower(), 'partied'] = value[1].lower()
-        pst.parameter_data.loc[param.lower(), 'parlbnd'] = 0.0
-        pst.parameter_data.loc[param.lower(), 'parubnd'] = 1.0
+        pst.parameter_data.loc[param.lower(), 'parval1'] = pest_parameters[value[1]][2]
+        pst.parameter_data.loc[param.lower(), 'parlbnd'] = pest_parameters[value[1]][0]
+        pst.parameter_data.loc[param.lower(), 'parubnd'] = pest_parameters[value[1]][1]
     elif value[0] == 'fixed':
         pst.parameter_data.loc[param.lower(), 'parval1'] = value[1]
         pst.parameter_data.loc[param.lower(), 'partrans'] = 'fixed'
@@ -416,7 +418,12 @@ pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"scale"]    = 1/100
-pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"partrans"] = 'none'
+#pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"partrans"] = 'none'
+# Make kvp positive ( have to switch low and high!)
+pst.parameter_data.loc['kvp1',['parval1','parlbnd','parubnd','scale']] *= -1
+hi_temp = pst.parameter_data.loc['kvp1','parlbnd']
+pst.parameter_data.loc['kvp1','parlbnd'] = pst.parameter_data.loc['kvp1','parubnd']
+pst.parameter_data.loc['kvp1','parubnd'] = hi_temp
 
 # And Specific Yield
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parval1"] *= 100
@@ -444,7 +451,7 @@ pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[
 
 # Add regularization
 pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale'])  # fancy pyemu helper
-pst.prior_information['weight'] *= 10000
+pst.prior_information['weight'] *= 10000000
 
 pst.model_command = [str(Path("forward_run.bat"))]
 
