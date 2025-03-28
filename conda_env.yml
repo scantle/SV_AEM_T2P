@@ -25,4 +25,5 @@ dependencies:
   - gstools
   - pip
   - pip:
+      - hydroeval
       - git+https://github.com/scantle/t2py.git@main

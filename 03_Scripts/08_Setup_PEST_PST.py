@@ -7,12 +7,12 @@ import flopy
 from tqdm import tqdm
 from pathlib import Path
 
-# Import weighting tools from 08_1_HOB_weights
+# Import local functions
 import sys
 sys.path.append('./03_Scripts')
 from HOB_weight_processing import wt_dict, hob_to_df, calculate_hob_weights
 from GAG_weight_processing import cv_stream_weights
-from T2P_funcs import t2p_par2par
+from T2P_funcs import t2p_par2par, t2p_par2par_frompar
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup
@@ -38,6 +38,11 @@ model_name = 'SVIHM'
 xoff = 499977
 yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
+
+vertical_well_pairs = [
+    ('ST201', 'ST201_2'),
+    ('ST786', 'ST786_2')
+]
 
 # Conversions
 cfs_to_m3d = 0.3048**3 * 86400
@@ -144,29 +149,30 @@ def balance_metagroup_weights(obs_df, metagroup_col="metagroup", target_weights=
 # Parameter lists are [low, high, default, group]
 # unless tied ['tied', tied_parameter, group] or fixed ['fixed', value, group]
 
+# NOTE! Default values are updated using a calibrated PEST par file down below.
 
 # Texture2Par Parameters
 t2p_parameters = {
     'KminFF1'   : [1e-7, 10.0, 5.0, 'K'],
-    'KminMF1_M' : [0.9, 100.0, 10.0, 'K'],
-    'KminSC1_M' : [0.9, 100.0, 2.0, 'K'],
-    'KminMC1_M' : [0.9, 100.0, 1.0, 'K'],
-    'KminVC1_M' : [0.9, 100.0, 10.0, 'K'],
+    'KminMF1_M' : [1.0, 100.0, 10.0, 'K_M'],
+    'KminSC1_M' : [1.0, 100.0, 2.0, 'K_M'],
+    'KminMC1_M' : [1.0, 100.0, 1.0, 'K_M'],
+    'KminVC1_M' : [1.0, 100.0, 10.0, 'K_M'],
     'AnisoVC1'  : [1.0, 10.0, 5.0, 'Aniso'],
-    'AnisoMC1_M': [1.0, 10.0, 5.0, 'Aniso'],
-    'AnisoSC1_M': [1.0, 10.0,  1.0, 'Aniso'],
-    'AnisoMF1_M': [1.0, 10.0,  1.0, 'Aniso'],
-    'AnisoFF1_M': [1.0, 10.0,  1.0, 'Aniso'],
+    'AnisoMC1_M': [1.0, 10.0, 5.0, 'Aniso_M'],
+    'AnisoSC1_M': [1.0, 10.0,  1.0, 'Aniso_M'],
+    'AnisoMF1_M': [1.0, 10.0,  1.0, 'Aniso_M'],
+    'AnisoFF1_M': [1.0, 10.0,  1.0, 'Aniso_M'],
     'SsFF1'     : [1e-5, 1e-2, 1e-4, 'Ss'],
-    'SsMF1_M'   : [0.1, 1.0, 0.45, 'Ss'],
-    'SsSC1_M'   : [0.1, 1.0, 0.45, 'Ss'],
-    'SsMC1_M'   : [0.1, 1.0, 0.45, 'Ss'],
-    'SsVC1_M'   : [0.1, 1.0, 0.45, 'Ss'],
-    'SySC1'     : [0.03, 0.30, 0.20, 'Sy'],
-    'SyMF1_M'   : [0.5, 1.0, 0.75, 'Sy'],
-    'SyFF1_M'   : [0.5, 1.0, 0.75, 'Sy'],
-    'SyMC1_M'   : [0.5, 1.0, 0.75, 'Sy'],
-    'SyVC1_M'   : [0.5, 1.0, 0.75, 'Sy'],
+    'SsMF1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
+    'SsSC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
+    'SsMC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
+    'SsVC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
+    'SySC1'     : [0.10, 0.40, 0.20, 'Sy'],
+    'SyMF1_M'   : [0.5, 1.5, 0.75, 'Sy_M'],
+    'SyFF1_M'   : [0.5, 1.0, 0.75, 'Sy_M'],
+    'SyMC1_M'   : [0.5, 1.5, 0.75, 'Sy_M'],
+    'SyVC1_M'   : [0.5, 1.5, 0.75, 'Sy_M'],
     'KHp1'      : [0.75, 1.0, 0.93, 'PLP'],
     'KVp1'      : [-1.0, -0.5, -0.62, 'PLP'],
 }
@@ -220,8 +226,19 @@ aem2texture_parameters = {
     'ScaleVC': [tex_scale_ranges.loc[4,'ScaleMin'], tex_scale_ranges.loc[4,'ScaleMax'], tex_dist_params.loc[4,'Scale'], 'aemscale'],
 }
 
+#-- MODFLOW PVL MFR parameters
+pvl_parameters = {
+    'MFR5' : [1.0, 1000, 2.00E+00, 'MFR'],
+    'MFR6' : [1.0, 1000, 6.00E+01, 'MFR'],
+    'MFR7' : [1.0, 1000, 7.00E+01, 'MFR'],
+    'MFR8' : [1.0, 1000, 1.50E+02, 'MFR'],
+    'MFR9' : [1.0, 1000, 5.00E+00, 'MFR'],
+    'MFR10': [1.0, 1000, 2.00E+01, 'MFR'],
+    'MFR11': [1.0, 1000, 9.00E+01, 'MFR'],
+}
+
 #-- Assemble
-pest_parameters = t2p_parameters | sfr_parameters | aem2texture_parameters
+pest_parameters = t2p_parameters | sfr_parameters | aem2texture_parameters | pvl_parameters
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Observations
@@ -243,6 +260,38 @@ hobs_df = hob_to_df(hob, origin_date)
 hobs_df = calculate_hob_weights(hobs_df, wt_dict, gwf.get_package('BAS6'))
 hobs_df['obsgnme'] = 'SV_HEADS'
 hobs_df.loc[hobs_df.wellid.str.startswith('QV'), 'obsgnme'] = 'QV_HEADS'
+
+#----------------------------------------------------------------------------------------------------------------------#
+# Setup Head Difference Observations
+hobs_diff = hobs_df[['obsnme', 'obsval']].copy()
+hobs_diff['diff'] = hobs_df.groupby('wellid')['obsval'].diff()
+hobs_diff = hobs_diff.dropna(subset=['diff']).reset_index(drop=True)
+hobs_diff['obsnme'] = hobs_diff['obsnme'] + '_D'
+hobs_diff['obsval'] = hobs_diff['diff']
+hobs_diff['obsgnme'] = 'HEAD_DIFFS'
+hobs_diff['wt'] = 1.0   # Errors are correlated, could weight higher
+
+#----------------------------------------------------------------------------------------------------------------------#
+# Setup Vertical Head Difference Observations
+
+vhdiff_list = []
+for top_well, bottom_well in vertical_well_pairs:
+    # Subset each well
+    top_df = hobs_df[hobs_df['wellid'] == top_well][['date', 'obsval']].rename(columns={'obsval': 'sim_top'})
+    bot_df = hobs_df[hobs_df['wellid'] == bottom_well][['date', 'obsval']].rename(columns={'obsval': 'sim_bot'})
+
+    # Merge on time index
+    merged = pd.merge(top_df, bot_df, on='date', how='inner')
+    merged['obsval'] = merged['sim_top'] - merged['sim_bot']
+
+    merged['obsnme'] = [f"{top_well}_VD.{i+1}" for i in merged['date'].index]
+
+    # Append
+    vhdiff_list.append(merged[['obsnme', 'obsval']])
+
+vhdiff_df = pd.concat(vhdiff_list, ignore_index=True)
+vhdiff_df['obsgnme'] = 'VH_DIFFS'
+vhdiff_df['wt'] = 0.5   # Errors are uncorrelated, 1^2 + 1^2 = 2; 1/2 = 0.5
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Streamflow Observations
@@ -298,7 +347,7 @@ fj_monthly.loc[fj_monthly['obsval'] <= thresholds[1], 'obsgnme'] = 'FJMONVOL_M'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[0], 'obsgnme'] = 'FJMONVOL_L'
 fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_high','wt'].median()
 fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_M', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_med','wt'].median()
-fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_L', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
+fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_L', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median() / 10
 
 #fj_monthly['obsnme'] = [f"FJVOL_{d.year}_{d.month:02d}" for d in fj_monthly.index]
 fj_vol = pd.concat([fj_wyearly[['obsnme', 'obsgnme', 'obsval', 'wt']],
@@ -308,11 +357,13 @@ fj_vol = pd.concat([fj_wyearly[['obsnme', 'obsgnme', 'obsval', 'wt']],
 # Combine observations
 pst_obs_cols = ['obsgnme', 'obsnme', 'obsval', 'wt']
 
-obs_df = pd.concat([str_fj [pst_obs_cols],
-                    str_as [pst_obs_cols],
-                    str_by [pst_obs_cols],
-                    fj_vol [pst_obs_cols],
-                    hobs_df[pst_obs_cols]]).reset_index(drop=True)
+obs_df = pd.concat([str_fj   [pst_obs_cols],
+                    str_as   [pst_obs_cols],
+                    str_by   [pst_obs_cols],
+                    fj_vol   [pst_obs_cols],
+                    hobs_df  [pst_obs_cols],
+                    hobs_diff[pst_obs_cols],
+                    vhdiff_df[pst_obs_cols]]).reset_index(drop=True)
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Adjust weights
@@ -322,6 +373,8 @@ metagroup_mapping = {
     # Head observations
     "SV_HEADS": "HEADS",
     "QV_HEADS": "HEADS",
+    "HEAD_DIFFS": "HEADDIFFS",
+    "VH_DIFFS": "HEADDIFFS",
     "fj_low": "STREAMFLOW",
     "fj_med": "STREAMFLOW",
     "fj_high": "STREAMFLOW",
@@ -341,20 +394,24 @@ metagroup_mapping = {
 obs_df["metagroup"] = obs_df["obsgnme"].map(metagroup_mapping)
 
 target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
-obs_df = balance_metagroup_weights(obs_df, target_weights={'HEADS':target_weight, 'STREAMFLOW':target_weight/10000})
+obs_df = balance_metagroup_weights(obs_df, target_weights={'HEADS':target_weight,
+                                                           'HEADDIFFS':target_weight,
+                                                           'STREAMFLOW':target_weight/10000})
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup PEST
 #----------------------------------------------------------------------------------------------------------------------#
 
-# Switch to folder PEST will run in
-os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/')
+# Switch to folder PEST setup is in
+os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/Setup/')
 
 # Write INS files
 write_ts_ins_file(str_fj, origin_date, '86:99', 2, 'Streamflow_FJ_SVIHM.ins')
 write_ts_ins_file(str_as, origin_date, '86:99', 2, 'Streamflow_AS_SVIHM.ins')
 write_ts_ins_file(str_by, origin_date, '86:99', 2, 'Streamflow_BY_SVIHM.ins')
 write_static_ins_file(fj_vol, 'Streamflow_FJ_SVIHM_VOL.ins', markers='w')
+write_static_ins_file(hobs_diff, 'HobData_SVIHM_DIFF.ins', markers='w')
+write_static_ins_file(vhdiff_df, 'HobData_SVIHM_VDIFF.ins', markers='w')
 write_hobs_ins_file(hobs_df, 'HobData_SVIHM.ins')
 
 #----------------------------------------------------------------------------------------------------------------------#
@@ -362,21 +419,31 @@ write_hobs_ins_file(hobs_df, 'HobData_SVIHM.ins')
 # We can then update the groups, weights, values, etc
 pst = pyemu.Pst.from_io_files(tpl_files=['t2p_par2par.tpl',
                                          'sfr2par_noUPW.tpl',
-                                         'AEM2Texture.tpl'],
+                                         'AEM2Texture.tpl',
+                                         'SVIHM_PVAL.tpl'
+                                         ],
                               in_files=[Path('./SVIHM/t2p_par2par.in'),
                                         Path('./SVIHM/sfr2par.in'),
-                                        Path('./SVIHM/preproc/AEM2Texture.in')],
+                                        Path('./SVIHM/preproc/AEM2Texture.in'),
+                                        Path('./SVIHM/MODFLOW/SVIHM.pvl')
+                                        ],
                               ins_files=['Streamflow_FJ_SVIHM.ins',
                                          'Streamflow_AS_SVIHM.ins',
                                          'Streamflow_BY_SVIHM.ins',
                                          'Streamflow_FJ_SVIHM_VOL.ins',
-                                         'HobData_SVIHM.ins',],
+                                         'HobData_SVIHM.ins',
+                                         'HobData_SVIHM_DIFF.ins',
+                                         'HobData_SVIHM_VDIFF.ins',
+                                         ],
                               out_files=[Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM.dat'),
                                          Path('./SVIHM/MODFLOW/Streamflow_AS_SVIHM.dat'),
                                          Path('./SVIHM/MODFLOW/Streamflow_BY_SVIHM.dat'),
                                          Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM_VOL.out'),
-                                         Path('./SVIHM/MODFLOW/HobData_SVIHM.dat')],
-                              pst_filename='svihm_t2p01.pst')
+                                         Path('./SVIHM/MODFLOW/HobData_SVIHM.dat'),
+                                         Path('./SVIHM/MODFLOW/HobData_SVIHM_DIFF.out'),
+                                         Path('./SVIHM/MODFLOW/HobData_SVIHM_VDIFF.out'),
+                                         ],
+                              pst_filename='svihm_t2p03.pst')
 
 # Parameter Check
 pest_param_names = {k.lower(): v for k, v in pest_parameters.items()}  # pyemu converts to lowercase
@@ -413,20 +480,35 @@ for param, value in pest_parameters.items():
         pst.parameter_data.loc[param.lower(), 'parlbnd'] = value[0]
         pst.parameter_data.loc[param.lower(), 'parubnd'] = value[1]
 
+# Update starting values from parfile
+calpar = pd.read_table(Path('../RunRecords/01/svihm_t2p01_use.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+#calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
+print(t2p_par2par_frompar(calpar))
+pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
+
+# Adjust derinc for groups
+pst.rectify_pgroups()
+# pst.parameter_groups.loc['K','derinc'] = 0.1
+# pst.parameter_groups.loc['Sy','derinc'] = 0.02
+# pst.parameter_groups.loc['PLP','derinc'] = 0.02
+# pst.parameter_groups.loc['MFR','derinc'] = 0.02
+# pst.parameter_groups.loc['mSFR','derinc'] = 0.05
+
 # Adjust scale, transformation of power-law parameters
-pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100
+#pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100       # parval now read in
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"scale"]    = 1/100
 #pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"partrans"] = 'none'
 # Make kvp positive ( have to switch low and high!)
-pst.parameter_data.loc['kvp1',['parval1','parlbnd','parubnd','scale']] *= -1
+#pst.parameter_data.loc['kvp1',['parval1','parlbnd','parubnd','scale']] *= -1      # parval now read in
+pst.parameter_data.loc['kvp1',['parlbnd','parubnd','scale']] *= -1
 hi_temp = pst.parameter_data.loc['kvp1','parlbnd']
 pst.parameter_data.loc['kvp1','parlbnd'] = pst.parameter_data.loc['kvp1','parubnd']
 pst.parameter_data.loc['kvp1','parubnd'] = hi_temp
 
 # And Specific Yield
-pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parval1"] *= 100
+#pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parval1"] *= 100    # parval now read in
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"scale"]    = 1/100
@@ -451,7 +533,7 @@ pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[
 
 # Add regularization
 pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale'])  # fancy pyemu helper
-pst.prior_information['weight'] *= 10000000
+pst.prior_information['weight'] *= 1000
 
 pst.model_command = [str(Path("forward_run.bat"))]
 
@@ -469,4 +551,10 @@ pst.control_data.numlam = 10
 pst.reg_data.wfinit = 1.0
 pst.reg_data.wffac = 1.3
 
-pst.write('svihm_t2p01.pst', version=1)
+# Sort to make pretty
+pst.parameter_data = pst.parameter_data.drop('parnme', axis=1)
+pst.parameter_data = pst.parameter_data.sort_values(["pargp", "parnme"])
+pst.parameter_data['parnme'] = pst.parameter_data.index
+pst.observation_data = pst.observation_data.sort_values(["obgnme", "obsnme"])
+
+pst.write('svihm_t2p03.pst', version=1)

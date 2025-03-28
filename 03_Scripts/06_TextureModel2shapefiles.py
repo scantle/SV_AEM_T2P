@@ -51,7 +51,7 @@ def convert_to_2d(geom):
 grid = gpd.read_file(sv_model_shp_file)
 grid['geometry'] = grid['geometry'].apply(convert_to_2d)
 
-# Remove redundant layer 2 shapes, remove layer column
+# Separate Layers
 grid_lay1 = grid[grid['Layer']==1]
 grid_lay2 = grid[grid['Layer']==2]
 

@@ -1,10 +1,6 @@
 import pandas as pd
 import argparse
 
-# # FOR TESTING
-# import os
-# os.chdir('//BEHEMOTH/Users/lelan/Documents/ModelRuns/SVIHM/20250115_NewCurtailments/With2024/MODFLOW/')
-
 #----------------------------------------------------------------------------------------------------------------------#
 # Settings
 #----------------------------------------------------------------------------------------------------------------------#

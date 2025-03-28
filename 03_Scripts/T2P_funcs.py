@@ -72,3 +72,72 @@ def t2p_par2par(t2p_parameters):
     df['Sy'] = df['Sy'].apply(lambda x: np.format_float_scientific(x, precision=2))
 
     return df
+
+#----------------------------------------------------------------------------------------------------------------------#
+
+def t2p_par2par_frompar(t2p_parameters):
+    """
+    Replicates the chain multiplications from the par2par file and
+    returns a DataFrame of final parameter values for each texture.
+
+    Parameters
+    ----------
+    t2p_parameters : pd.DataFrame
+        A DataFrame with index = parameter names, and columns:
+        ['parval1', 'scale', 'offset'] as written by PEST.
+
+    Returns
+    -------
+    pd.DataFrame
+        Final parameter values by texture class (FF, MF, SC, MC, VC),
+        with columns: Kmin, Aniso, Ss, Sy.
+    """
+    # Ensure index is lowercase
+    df = t2p_parameters.copy()
+    df.index = df.index.str.lower()
+
+    # Compute the true parameter values: parval1 * scale + offset
+    pvals = df['parval1'] * df['scale'] + df['offset']
+
+    # --- Kmin chain ---
+    k_ff = pvals['kminff1']
+    k_mf = k_ff * pvals['kminmf1_m']
+    k_sc = k_mf * pvals['kminsc1_m']
+    k_mc = k_sc * pvals['kminmc1_m']
+    k_vc = k_mc * pvals['kminvc1_m']
+
+    # --- Aniso chain ---
+    an_vc = pvals['anisovc1']
+    an_mc = an_vc * pvals['anisomc1_m']
+    an_sc = an_mc * pvals['anisosc1_m']
+    an_mf = an_sc * pvals['anisomf1_m']
+    an_ff = an_mf * pvals['anisoff1_m']
+
+    # --- Ss chain ---
+    ss_ff = pvals['ssff1']
+    ss_mf = ss_ff * pvals['ssmf1_m']
+    ss_sc = ss_mf * pvals['sssc1_m']
+    ss_mc = ss_sc * pvals['ssmc1_m']
+    ss_vc = ss_mc * pvals['ssvc1_m']
+
+    # --- Sy chain ---
+    sy_sc = pvals['sysc1']
+    sy_mf = sy_sc * pvals['symf1_m']
+    sy_ff = sy_mf * pvals['syff1_m']
+    sy_mc = sy_sc * pvals['symc1_m']
+    sy_vc = sy_mc * pvals['syvc1_m']
+
+    # Final values by texture
+    final_vals = {
+        "FF": {"Kmin": k_ff, "Aniso": an_ff, "Ss": ss_ff, "Sy": sy_ff},
+        "MF": {"Kmin": k_mf, "Aniso": an_mf, "Ss": ss_mf, "Sy": sy_mf},
+        "SC": {"Kmin": k_sc, "Aniso": an_sc, "Ss": ss_sc, "Sy": sy_sc},
+        "MC": {"Kmin": k_mc, "Aniso": an_mc, "Ss": ss_mc, "Sy": sy_mc},
+        "VC": {"Kmin": k_vc, "Aniso": an_vc, "Ss": ss_vc, "Sy": sy_vc},
+    }
+
+    df_out = pd.DataFrame(final_vals).T[["Kmin", "Aniso", "Ss", "Sy"]]
+    df_out['Ss'] = df_out['Ss'].apply(lambda x: np.format_float_scientific(x, precision=2))
+    df_out['Sy'] = df_out['Sy'].apply(lambda x: np.format_float_scientific(x, precision=2))
+
+    return df_out

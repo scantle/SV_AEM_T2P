@@ -24,7 +24,6 @@ xoff = 499977
 yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
-# Wells that need selective points downweighted & downweight type
 wt_dict = {'N2': ['after_date', pd.to_datetime('01/01/2019')],
            'Q32': ['after_date', pd.to_datetime('02/10/2020')],
            'SCT_170': ['rolling_median', 0.5, 90, 0.0],
@@ -32,6 +31,9 @@ wt_dict = {'N2': ['after_date', pd.to_datetime('01/01/2019')],
            'SCT_690': ['rolling_median', 1.0, 120, 0.0],
            'SCT_794': ['rolling_median', 0.7,  90, 0.0],
            'SCT_888': ['rolling_median', 1.0,  60, 0.0],
+           'SCT_655': ['after_date', pd.to_datetime('10/01/1990')],
+           'ST202'  : ['after_date', pd.to_datetime('10/01/1990')],
+# Wells that need selective points downweighted & downweight type
 #           'SCT_969': ['rolling_median', 1.0, 365, 0.0],
            'SCT_987': ['rolling_median', 1.0, 180, 0.0],
           }
@@ -40,7 +42,7 @@ wt_dict = {'N2': ['after_date', pd.to_datetime('01/01/2019')],
 # Classes/Functions
 #----------------------------------------------------------------------------------------------------------------------#
 
-def hob_to_df(hob, origin_date):
+def hob_to_df(hob, origin_date, out_file=None):
     obs_records = []
     for hob_entry in tqdm(hob.obs_data, desc='HOB Entry', total=len(hob.obs_data)):
         for ts_data in hob_entry.time_series_data:
@@ -72,6 +74,11 @@ def hob_to_df(hob, origin_date):
 
     # Convert list of dictionaries into a DataFrame
     obs_df = pd.DataFrame(obs_records)
+
+    if out_file is not None:
+        hob_out = pd.read_csv(out_file, sep='\\s+', skiprows=1, header=None, names=['simval','obsval','obsnme'])
+        assert hob_out.shape[0] == obs_df.shape[0]
+        obs_df = obs_df.merge(hob_out[['obsnme','simval']], on=['obsnme'])
 
     return obs_df
 
