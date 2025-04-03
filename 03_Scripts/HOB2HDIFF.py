@@ -68,6 +68,6 @@ if __name__ == "__main__":
 
     # Write to file
     print(f"Writing {out_file[0]}")
-    hob_diff[['obsnme','simval_diff']].to_csv(out_file[0], sep=" ", header=False, index=False, lineterminator='\n')
+    hob_diff[['obsnme','simval_diff']].to_csv(out_file[0], sep=" ", header=False, index=False)
     print(f"Writing {out_file[1]}")
-    vhdiff_df.to_csv(out_file[1], sep=" ", header=False, index=False, lineterminator='\n')
+    vhdiff_df.to_csv(out_file[1], sep=" ", header=False, index=False)

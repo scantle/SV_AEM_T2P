@@ -39,6 +39,9 @@ xoff = 499977
 yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
+# Out
+pst_file = 'svihm_t2p04.pst'
+
 vertical_well_pairs = [
     ('ST201', 'ST201_2'),
     ('ST786', 'ST786_2')
@@ -51,7 +54,7 @@ cfs_to_m3d = 0.3048**3 * 86400
 # Classes/Functions
 #----------------------------------------------------------------------------------------------------------------------#
 
-def write_ts_ins_file(obs_df, origin_date, column_str, skip_rows, ins_filename, date_col="Date"):
+def write_ts_ins_file(obs_df, origin_date, skip_rows, ins_filename, column_str=None, markers=None, date_col="Date"):
     """
     Writes a PEST instruction (ins) file for streamflow observations with optimized skipping.
 
@@ -71,7 +74,12 @@ def write_ts_ins_file(obs_df, origin_date, column_str, skip_rows, ins_filename, 
             days_skipped = (row[date_col] - current_date).days
             if i == 0:
                 days_skipped += skip_rows
-            f.write(f"l{days_skipped + 1} [{row['obsnme']}]{column_str}\n")
+            if column_str is not None:
+                f.write(f"l{days_skipped + 1} [{row['obsnme']}]{column_str}\n")
+            elif markers is not None:
+                f.write(f"l{days_skipped + 1} {markers} !{row['obsnme']}!\n")
+            else:
+                raise ValueError("Must pass either markers or column_str")
             current_date = row[date_col] + pd.Timedelta(days=1)
 
     print(f"Instruction file written: {ins_filename}")
@@ -263,13 +271,13 @@ hobs_df.loc[hobs_df.wellid.str.startswith('QV'), 'obsgnme'] = 'QV_HEADS'
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Head Difference Observations
-hobs_diff = hobs_df[['obsnme', 'obsval']].copy()
+hobs_diff = hobs_df[['obsnme', 'obsval','wt']].copy()
 hobs_diff['diff'] = hobs_df.groupby('wellid')['obsval'].diff()
 hobs_diff = hobs_diff.dropna(subset=['diff']).reset_index(drop=True)
 hobs_diff['obsnme'] = hobs_diff['obsnme'] + '_D'
 hobs_diff['obsval'] = hobs_diff['diff']
 hobs_diff['obsgnme'] = 'HEAD_DIFFS'
-hobs_diff['wt'] = 1.0   # Errors are correlated, could weight higher
+hobs_diff['wt'] = hobs_diff['wt'] * 1.25
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Vertical Head Difference Observations
@@ -291,7 +299,7 @@ for top_well, bottom_well in vertical_well_pairs:
 
 vhdiff_df = pd.concat(vhdiff_list, ignore_index=True)
 vhdiff_df['obsgnme'] = 'VH_DIFFS'
-vhdiff_df['wt'] = 0.5   # Errors are uncorrelated, 1^2 + 1^2 = 2; 1/2 = 0.5
+vhdiff_df['wt'] = 16  # Trying to give vdiffs some real representation in the objective function
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Streamflow Observations
@@ -311,6 +319,11 @@ str_as['obsval'] = str_as['Streamflow_m3/day']
 str_by['obsnme'] = [f"BY_{i + 1}" for i in str_by.index]
 str_by['obsval'] = str_by['Streamflow_m3/day']
 
+# log transform with a small offset to avoid 0
+str_fj['obsval'] = np.log(str_fj['obsval'] + 0.1)
+str_as['obsval'] = np.log(str_as['obsval'] + 0.1)
+str_by['obsval'] = np.log(str_by['obsval'] + 0.1)
+
 # Set some variables to reuse
 qts = [0.40, 0.80]
 cvs = [0.1, 0.2, 0.4]
@@ -320,11 +333,19 @@ str_fj['obsgnme'], str_fj['wt'] = cv_stream_weights(str_fj, qts, cvs, 'fj')
 str_as['obsgnme'], str_as['wt'] = cv_stream_weights(str_as, qts, cvs, 'as')
 str_by['obsgnme'], str_by['wt'] = cv_stream_weights(str_by, qts, cvs, 'by')
 
+# Re-weight
+str_fj['wt'] = 1/np.sqrt(np.log(1+0.12**2))
+str_as['wt'] = 1/np.sqrt(np.log(1+0.12**2))
+str_by['wt'] = 1/np.sqrt(np.log(1+0.12**2))
+str_as.loc[str_as['obsgnme']=='fj_high','wt'] = 1/np.sqrt(np.log(1+0.12**2)) * 0.5
+str_as.loc[str_as['obsgnme']=='as_high','wt'] = 1/np.sqrt(np.log(1+0.12**2)) * 0.5
+str_by.loc[str_by['obsgnme']=='by_high','wt'] = 1/np.sqrt(np.log(1+0.12**2)) * 0.5
+
 # Adjust weights where necessary
 # Tolley et al. (2019) found some of the smaller stream obs near 0 created Inf weights
 # They assigned the weight of low flow of the non-USGS gauges to be the median FJ low flow weight
-str_as.loc[str_as['obsgnme']=='as_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
-str_by.loc[str_by['obsgnme']=='by_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
+# str_as.loc[str_as['obsgnme']=='as_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
+# str_by.loc[str_by['obsgnme']=='by_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup FJ volume observations
@@ -339,15 +360,15 @@ fj_wyearly['obsnme'] = [f"FJVOL_WY_{d.year+1}" for d in fj_wyearly.index]
 fj_monthly = str_fj_full.resample('ME').sum()
 fj_monthly['obsnme'] = [f"FJVOL_{d.year}_{d.month:02d}" for d in fj_monthly.index]
 fj_wyearly['obsgnme'] = 'FJYRLYVOL'
-fj_wyearly['wt'] = str_fj.loc[str_fj['obsgnme']=='fj_high','wt'].median()
+fj_wyearly['wt'] = 1e-7
 
 thresholds = fj_monthly['obsval'].quantile(qts).values
 fj_monthly['obsgnme'] = 'FJMONVOL_H'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[1], 'obsgnme'] = 'FJMONVOL_M'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[0], 'obsgnme'] = 'FJMONVOL_L'
-fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_high','wt'].median()
-fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_M', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_med','wt'].median()
-fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_L', 'wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median() / 10
+fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = 1e-8
+fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_M', 'wt'] = 1e-7
+fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_L', 'wt'] = 1e-6
 
 #fj_monthly['obsnme'] = [f"FJVOL_{d.year}_{d.month:02d}" for d in fj_monthly.index]
 fj_vol = pd.concat([fj_wyearly[['obsnme', 'obsgnme', 'obsval', 'wt']],
@@ -373,8 +394,8 @@ metagroup_mapping = {
     # Head observations
     "SV_HEADS": "HEADS",
     "QV_HEADS": "HEADS",
-    "HEAD_DIFFS": "HEADDIFFS",
-    "VH_DIFFS": "HEADDIFFS",
+    "HEAD_DIFFS": "HEADS",
+    "VH_DIFFS": "HEADS",
     "fj_low": "STREAMFLOW",
     "fj_med": "STREAMFLOW",
     "fj_high": "STREAMFLOW",
@@ -393,10 +414,15 @@ metagroup_mapping = {
 # Assign metagroup labels
 obs_df["metagroup"] = obs_df["obsgnme"].map(metagroup_mapping)
 
-target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
-obs_df = balance_metagroup_weights(obs_df, target_weights={'HEADS':target_weight,
-                                                           'HEADDIFFS':target_weight,
-                                                           'STREAMFLOW':target_weight/10000})
+#target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
+obs_df.groupby('obsgnme').wt.sum()
+obs_df.groupby('metagroup').wt.sum()
+
+# obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weight,
+#                                                             'HEADDIFFS':target_weight,
+#                                                             'VH_DIFFS':target_weight,
+#                                                             'STREAMFLOW':target_weight,
+#                                                            'STREAMVOL':target_weight/1e9})
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup PEST
@@ -406,9 +432,12 @@ obs_df = balance_metagroup_weights(obs_df, target_weights={'HEADS':target_weight
 os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/Setup/')
 
 # Write INS files
-write_ts_ins_file(str_fj, origin_date, '86:99', 2, 'Streamflow_FJ_SVIHM.ins')
-write_ts_ins_file(str_as, origin_date, '86:99', 2, 'Streamflow_AS_SVIHM.ins')
-write_ts_ins_file(str_by, origin_date, '86:99', 2, 'Streamflow_BY_SVIHM.ins')
+# write_ts_ins_file(str_fj, origin_date, 2, 'Streamflow_FJ_SVIHM.ins', columns='86:99')
+write_ts_ins_file(str_as, origin_date, 2, 'Streamflow_AS_SVIHM.ins', column_str='86:99')
+write_ts_ins_file(str_by, origin_date, 2, 'Streamflow_BY_SVIHM.ins', column_str='86:99')
+write_ts_ins_file(str_fj, origin_date,0, 'Streamflow_FJ_SVIHM_MidptFlow_LOG.ins', markers='w')
+write_ts_ins_file(str_as, origin_date,0, 'Streamflow_AS_SVIHM_MidptFlow_LOG.ins', markers='w')
+write_ts_ins_file(str_by, origin_date,0, 'Streamflow_BY_SVIHM_MidptFlow_LOG.ins', markers='w')
 write_static_ins_file(fj_vol, 'Streamflow_FJ_SVIHM_VOL.ins', markers='w')
 write_static_ins_file(hobs_diff, 'HobData_SVIHM_DIFF.ins', markers='w')
 write_static_ins_file(vhdiff_df, 'HobData_SVIHM_VDIFF.ins', markers='w')
@@ -427,23 +456,23 @@ pst = pyemu.Pst.from_io_files(tpl_files=['t2p_par2par.tpl',
                                         Path('./SVIHM/preproc/AEM2Texture.in'),
                                         Path('./SVIHM/MODFLOW/SVIHM.pvl')
                                         ],
-                              ins_files=['Streamflow_FJ_SVIHM.ins',
-                                         'Streamflow_AS_SVIHM.ins',
-                                         'Streamflow_BY_SVIHM.ins',
+                              ins_files=['Streamflow_FJ_SVIHM_MidptFlow_LOG.ins',
+                                         'Streamflow_AS_SVIHM_MidptFlow_LOG.ins',
+                                         'Streamflow_BY_SVIHM_MidptFlow_LOG.ins',
                                          'Streamflow_FJ_SVIHM_VOL.ins',
                                          'HobData_SVIHM.ins',
                                          'HobData_SVIHM_DIFF.ins',
                                          'HobData_SVIHM_VDIFF.ins',
                                          ],
-                              out_files=[Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM.dat'),
-                                         Path('./SVIHM/MODFLOW/Streamflow_AS_SVIHM.dat'),
-                                         Path('./SVIHM/MODFLOW/Streamflow_BY_SVIHM.dat'),
+                              out_files=[Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM_MidptFlow_LOG.out'),
+                                         Path('./SVIHM/MODFLOW/Streamflow_AS_SVIHM_MidptFlow_LOG.out'),
+                                         Path('./SVIHM/MODFLOW/Streamflow_BY_SVIHM_MidptFlow_LOG.out'),
                                          Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM_VOL.out'),
                                          Path('./SVIHM/MODFLOW/HobData_SVIHM.dat'),
                                          Path('./SVIHM/MODFLOW/HobData_SVIHM_DIFF.out'),
                                          Path('./SVIHM/MODFLOW/HobData_SVIHM_VDIFF.out'),
                                          ],
-                              pst_filename='svihm_t2p03.pst')
+                              pst_filename=pst_file)
 
 # Parameter Check
 pest_param_names = {k.lower(): v for k, v in pest_parameters.items()}  # pyemu converts to lowercase
@@ -480,12 +509,6 @@ for param, value in pest_parameters.items():
         pst.parameter_data.loc[param.lower(), 'parlbnd'] = value[0]
         pst.parameter_data.loc[param.lower(), 'parubnd'] = value[1]
 
-# Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/01/svihm_t2p01_use.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
-#calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
-print(t2p_par2par_frompar(calpar))
-pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
-
 # Adjust derinc for groups
 pst.rectify_pgroups()
 # pst.parameter_groups.loc['K','derinc'] = 0.1
@@ -495,20 +518,20 @@ pst.rectify_pgroups()
 # pst.parameter_groups.loc['mSFR','derinc'] = 0.05
 
 # Adjust scale, transformation of power-law parameters
-#pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100       # parval now read in
+pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100       # parval now read in
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"scale"]    = 1/100
 #pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"partrans"] = 'none'
 # Make kvp positive ( have to switch low and high!)
-#pst.parameter_data.loc['kvp1',['parval1','parlbnd','parubnd','scale']] *= -1      # parval now read in
-pst.parameter_data.loc['kvp1',['parlbnd','parubnd','scale']] *= -1
+pst.parameter_data.loc['kvp1',['parval1','parlbnd','parubnd','scale']] *= -1      # parval now read in
+#pst.parameter_data.loc['kvp1',['parlbnd','parubnd','scale']] *= -1
 hi_temp = pst.parameter_data.loc['kvp1','parlbnd']
 pst.parameter_data.loc['kvp1','parlbnd'] = pst.parameter_data.loc['kvp1','parubnd']
 pst.parameter_data.loc['kvp1','parubnd'] = hi_temp
 
 # And Specific Yield
-#pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parval1"] *= 100    # parval now read in
+pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parval1"] *= 100    # parval now read in
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"scale"]    = 1/100
@@ -532,8 +555,14 @@ obs_df = obs_df.set_index('obsnme')
 pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[["obsval", "wt", "obsgnme"]].to_numpy()
 
 # Add regularization
-pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale'])  # fancy pyemu helper
+pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'MFR'])  # fancy pyemu helper
 pst.prior_information['weight'] *= 1000
+
+# Update starting values from parfile
+calpar = pd.read_table(Path('../RunRecords/01/svihm_t2p01_use.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+#calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
+print(t2p_par2par_frompar(calpar))
+pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
 
 pst.model_command = [str(Path("forward_run.bat"))]
 
@@ -557,4 +586,4 @@ pst.parameter_data = pst.parameter_data.sort_values(["pargp", "parnme"])
 pst.parameter_data['parnme'] = pst.parameter_data.index
 pst.observation_data = pst.observation_data.sort_values(["obgnme", "obsnme"])
 
-pst.write('svihm_t2p03.pst', version=1)
+pst.write(pst_file, version=1)
