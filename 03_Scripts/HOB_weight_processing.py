@@ -26,16 +26,20 @@ origin_date = pd.to_datetime('1990-9-30')
 
 wt_dict = {'N2': ['after_date', pd.to_datetime('01/01/2019')],
            'Q32': ['after_date', pd.to_datetime('02/10/2020')],
-           'SCT_170': ['rolling_median', 0.5, 90, 0.0],
-           'SCT_192': ['rolling_median', 1.5, 365, 0.0],
-           'SCT_690': ['rolling_median', 1.0, 120, 0.0],
-           'SCT_794': ['rolling_median', 0.7,  90, 0.0],
-           'SCT_888': ['rolling_median', 1.0,  60, 0.0],
-           'SCT_655': ['after_date', pd.to_datetime('10/01/1990')],
-           'ST202'  : ['after_date', pd.to_datetime('10/01/1990')],
-# Wells that need selective points downweighted & downweight type
+           'ST170': ['rolling_median', 0.5, 90, 0.0],
+           'ST192': ['rolling_median', 1.5, 365, 0.0],
+           'ST690': ['rolling_median', 1.0, 120, 0.0],
+           'ST794': ['rolling_median', 0.7,  90, 0.0],
+           'ST888': ['rolling_median', 1.0,  60, 0.0],
+           'ST987': ['rolling_median', 1.0, 180, 0.0],
+           'ST655': ['after_date', pd.to_datetime('10/01/1990')],
+           'ST202': ['after_date', pd.to_datetime('10/01/1990')],
+           'G40'  : ['after_date', pd.to_datetime('10/01/1990')],
+           'L32'  : ['after_date', pd.to_datetime('10/01/1990')],
+           'N15'  : ['after_date', pd.to_datetime('10/01/1990')],
+           'G31'  : ['after_date', pd.to_datetime('10/01/1990')],
+           'ST186': ['after_date', pd.to_datetime('10/01/1990')],
 #           'SCT_969': ['rolling_median', 1.0, 365, 0.0],
-           'SCT_987': ['rolling_median', 1.0, 180, 0.0],
           }
 
 #----------------------------------------------------------------------------------------------------------------------#
@@ -124,6 +128,8 @@ def calculate_hob_weights(hobs_df, wt_dict, bas, out_dir=None):
     # Process hand-picked wells with specific rules
     for well in wt_dict.keys():
         well_df = hobs_df[hobs_df['wellid'] == well].copy()
+        if well_df.shape[0]==0:
+            raise RuntimeError(f"No data for well {well}")
         well_df.sort_values("date", inplace=True)
         deviation_threshold = None
         window=None

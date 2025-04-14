@@ -35,6 +35,12 @@ by_file = svihm_ref_dir / 'Scott River Below Youngs Dam.txt'
 origin_date = pd.to_datetime('1990-9-30')
 end_date = pd.to_datetime('2024-9-30')
 
+# Removals
+fj_impossible_dates = [(pd.to_datetime('11/21/2001'), pd.to_datetime('11/23/2001')),
+                       (pd.to_datetime('10/22/2021'), pd.to_datetime('10/23/2021')),
+                       (pd.to_datetime(' 9/19/2016'), pd.to_datetime(' 9/22/2016'))]
+
+
 # Conversions
 cfs_to_m3d = 0.3048**3 * 86400
 m3d_to_cfs = 1 / cfs_to_m3d

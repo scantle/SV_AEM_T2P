@@ -12,6 +12,7 @@ from scipy.stats import norm, lognorm, entropy
 from scipy.optimize import minimize
 from sklearn.metrics import silhouette_score, normalized_mutual_info_score
 from sklearn.neighbors import NearestNeighbors
+import json
 
 from pykrige.ok import OrdinaryKriging
 from kmodes.kprototypes import KPrototypes
@@ -518,6 +519,14 @@ with open(out_dir / 'lognorm_dist_clustered.par', 'w') as f:
     f.write(f"{'Texture':>15}{'Shape':>12}{'Location':>12}{'Scale':>12}\n")
     for tex in fit_dists.keys():
         f.write(f"{tex_names[tex]:15}{fit_dists[tex][0]:12.6f}{fit_dists[tex][1]:12.6f}{fit_dists[tex][2]:12.6f}\n")
+# -------------------------------------------------------------------------------------------------------------------- #
+
+# Convert numpy floats to native Python floats for JSON compatibility
+rho_dict_serializable = {int(k): [float(vv) for vv in v] for k, v in rho_dict.items()}
+
+with open(out_dir / "rho_dict.json", "w") as f:
+    json.dump(rho_dict_serializable, f, indent=2)
+
 # -------------------------------------------------------------------------------------------------------------------- #
 
 # Compute std dev of bootstrap mean estimates from rho_dict

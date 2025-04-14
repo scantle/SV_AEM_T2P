@@ -9,6 +9,9 @@ import geopandas as gpd
 from pathlib import Path
 from hydroeval import evaluator, nse, kge, rmse, pbias
 
+# import os
+# os.chdir('../')
+
 import sys
 sys.path.append('./03_Scripts')
 from HOB_weight_processing import hob_to_df, wt_dict, calculate_hob_weights
@@ -23,7 +26,7 @@ shp_dir = data_dir / 'shapefiles'
 plt_dir = Path('04_Plots')
 svihm_dir = Path('../SVIHM/')  # External to project, local SVIHM Git repo
 svihm_ref_dir = svihm_dir / 'SVIHM_Input_Files/reference_data_for_plots/'
-model_dir = Path('//BEHEMOTH/Users/lelan/Documents/ModelRuns/SVIHM/2025_t2p_calibration/02_MFR_regw100/SVIHM/MODFLOW/')
+model_dir = Path('//BEHEMOTH/Users/lelan/Documents/ModelRuns/SVIHM/2025_t2p_calibration/04_final/SVIHM/MODFLOW/')
 tex_file_dir = model_dir / '../preproc/'
 
 # Texture files
@@ -107,6 +110,14 @@ def calc_metrics(group, weight_col=None):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
+def calc_PEST_res(df):
+    res_df = df.copy()
+    res_df['res'] = res_df['obsval'] - res_df['simval']
+    res_df['wtsqres'] = res_df['res']**2 * res_df['wt']**2
+    return res_df
+
+# -------------------------------------------------------------------------------------------------------------------- #
+
 def plot_well_metrics(well_df, grid_df, metric, prop=None, cmap='viridis', breaks=None, ax=None):
     """
     Plot well metrics over a MODFLOW grid with optional hydraulic property coloring.
@@ -150,6 +161,22 @@ def plot_well_metrics(well_df, grid_df, metric, prop=None, cmap='viridis', break
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
+def check_obs_above_ground(hob_df, gwf):
+    """
+    For each well in hob_df, check if any observation heads are above the model’s ground surface.
+    Ground surface is taken from gwf.dis.top. Prints the well name and number of obs above ground
+    if any are found.
+    """
+    top_array = gwf.dis.top.array  # 2D array of the top elevation for each cell
+    for well_id, group in hob_df.groupby('wellid'):
+        row = group['row'].iloc[0]
+        col = group['col'].iloc[0]
+        ground_surface = top_array[row, col]
+        # Count how many observations exceed ground surface
+        above_count = (group['obsval'] > ground_surface).sum()
+        if above_count > 0:
+            print(f"Well {well_id}: {above_count} observation(s) above ground surface of {ground_surface}.")
+
 # -------------------------------------------------------------------------------------------------------------------- #
 # Main
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -163,7 +190,7 @@ hob = flopy.modflow.ModflowHob.load(model_dir / "svihm.hob", model=gwf)
 print('Hobs read.')
 
 # Read in hob key for XY locations...
-hob_locs = pd.read_csv(svihm_ref_dir / 'hob_key.csv')
+hob_locs = pd.read_csv(svihm_ref_dir / '_hob_key.csv')
 
 # Convert to DF, also reads in simulated values
 hob_df = hob_to_df(hob, origin_date, model_dir/ 'HobData_SVIHM.dat')
@@ -191,6 +218,11 @@ grid = grid.merge(upw_df, how='left', on=['Layer', 'Row', 'Column'])
 # Drop ibound==0 cells
 grid = grid[grid['IBOUND']==1]
 
+# How PEST sees it
+PEST_res = calc_PEST_res(hob_df)
+PEST_res.groupby('wellid')['wtsqres'].sum().sort_values().tail(10)
+
+check_obs_above_ground(hob_df, gwf)
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
