@@ -40,7 +40,7 @@ yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
 # Out
-pst_file = 'svihm_t2p05.pst'
+pst_file = 'svihm_t2p06.pst'
 
 vertical_well_pairs = [
     ('ST201', 'ST201_2'),
@@ -187,7 +187,7 @@ t2p_parameters = {
     'SsVC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
     'SySC1'     : [0.20, 0.40, 0.25, 'Sy'],
     'SyMF1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
-    'SyFF1_M'   : [0.1, 1.0, 0.75, 'Sy_M'],
+    'SyFF1_M'   : [0.01, 1.0, 0.75, 'Sy_M'],
     'SyMC1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
     'SyVC1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
     'KHp1'      : [0.75, 1.0, 0.93, 'PLP'],
@@ -351,12 +351,12 @@ str_as['obsgnme'], str_as['wt'] = cv_stream_weights(str_as, qts, cvs, 'as')
 str_by['obsgnme'], str_by['wt'] = cv_stream_weights(str_by, qts, cvs, 'by')
 
 # Re-weight
-str_fj.loc[str_fj['obsgnme']=='fj_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
-str_as.loc[str_as['obsgnme']=='as_low', 'wt'] = 1/np.sqrt(np.log(1+0.20**2))
-str_by.loc[str_by['obsgnme']=='by_low', 'wt'] = 1/np.sqrt(np.log(1+0.20**2))
+str_fj.loc[str_fj['obsgnme']=='fj_low', 'wt'] = 1/np.sqrt(np.log(1+0.10**2))
+str_as.loc[str_as['obsgnme']=='as_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
+str_by.loc[str_by['obsgnme']=='by_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
 str_fj.loc[str_fj['obsgnme']=='fj_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
-str_as.loc[str_as['obsgnme']=='as_med', 'wt'] = 1/np.sqrt(np.log(1+0.20**2))
-str_by.loc[str_by['obsgnme']=='by_med', 'wt'] = 1/np.sqrt(np.log(1+0.20**2))
+str_as.loc[str_as['obsgnme']=='as_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
+str_by.loc[str_by['obsgnme']=='by_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
 str_fj.loc[str_fj['obsgnme']=='fj_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
 str_as.loc[str_as['obsgnme']=='as_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
 str_by.loc[str_by['obsgnme']=='by_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
@@ -580,12 +580,12 @@ obs_df = obs_df.set_index('obsnme')
 pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[["obsval", "wt", "obsgnme"]].to_numpy()
 
 # Add regularization
-pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'MFR', 'Sy'])  # fancy pyemu helper
-pst.prior_information['weight'] *= 500
-pst.prior_information.loc['sysc1','weight'] *= 0.25
+pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'MFR'])  # fancy pyemu helper
+pst.prior_information['weight'] *= 50
+#pst.prior_information.loc['sysc1','weight'] *= 0.25
 
 # Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/03/svihm_t2p03_iter3_use.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+calpar = pd.read_table(Path('../RunRecords/05/svihm_t2p05.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
 #calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
 print(t2p_par2par_frompar(calpar))
 pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
