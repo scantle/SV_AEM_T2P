@@ -1,13 +1,13 @@
 BEGIN VARIOGRAMS
   # Structure Vtype  Nugget  Sill  Range_min Range_max ang1  nnear
   CLASS Fine
-           1    Exp    0.023   0.077    2.53E+03       2.53E+03  0.0    32
+           1    Exp    0.019   0.057    2.88E+03       2.88E+03  0.0    300
   CLASS Mixed_Fine
-           1    Exp    0.041   0.041    9.46E+02       9.46E+02  0.0    32
+           1    Exp    0.036   0.047    9.99E+02       9.99E+02  0.0    300
   CLASS Sand
-           1    Exp    0.025   0.030    3.43E+02       3.43E+02  0.0    32
+           1    Exp    0.024   0.020    5.32E+02       5.32E+02  0.0    300
   CLASS Mixed_Coarse
-           1    Exp    0.036   0.059    5.33E+02       5.33E+02  0.0    32
+           1    Exp    0.039   0.060    6.32E+02       6.32E+02  0.0    300
   CLASS Very_Coarse
-           1    Exp    0.025   0.090    9.29E+02       9.29E+02  0.0    32
+           1    Exp    0.028   0.091    9.39E+02       9.39E+02  0.0    300
 END VARIOGRAMS

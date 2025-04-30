@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import statsmodels.api as sm
 from pathlib import Path
 from tqdm import tqdm
@@ -33,6 +34,7 @@ from aem_read import read_xyz, aem_wide2long
 # Settings
 # -------------------------------------------------------------------------------------------------------------------- #
 np.random.seed(1024)
+plt.ion()
 
 # Directories
 data_dir = Path('../01_Data/')
@@ -48,6 +50,9 @@ wl_file = data_dir / 'WLs_Oct312021.csv'
 # Shapefiles
 aem_sharp_sv_file = shp_dir / 'aem_sv_Sharp_I01_MOD_inv_UTM10N_idwwl.shp'
 aem_hqwells_file = shp_dir / 'aem_sv_HQ_LithologyWells_UTM10N.shp'
+
+# Cluster colors
+cc = ['#df263e', '#e37e26', '#e3c128', '#6da14d', '#5289db']
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Classes/Functions
@@ -98,6 +103,10 @@ def fit_lognormal_with_constraints(data):
     else:
         raise RuntimeError("Optimization failed: " + result.message)
 
+
+def format_log_tick(x, pos):
+    return r'$10^{{{}}}$'.format(int(x))
+
 # -------------------------------------------------------------------------------------------------------------------- #
 # Main
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -143,7 +152,7 @@ lith_use = litho.copy()
 lith_use['UID'] = range(1, len(lith_use) + 1)
 
 # Limit Distance
-aem_wells_use = aem_hqwells_shp[aem_hqwells_shp['dist'] <= 500.0]  # aem_hqwells_shp.copy()
+aem_wells_use = aem_hqwells_shp[aem_hqwells_shp['dist'] <= 800.0]  # aem_hqwells_shp.copy()
 
 # Initialize an empty list to store the data
 overlapping_data = []
@@ -187,8 +196,10 @@ overlapping_df = pd.DataFrame(overlapping_data)
 # Some forced classification
 overlapping_df.loc[overlapping_df['Texture']=='shale','Classification']    = 'fine'
 overlapping_df.loc[overlapping_df['Texture']=='top soil','Classification'] = 'fine'
-overlapping_df.loc[overlapping_df['Texture']=='rock','Classification']     = 'coarse'
+#overlapping_df.loc[overlapping_df['Texture']=='rock','Classification']     = 'coarse'
+overlapping_df = overlapping_df.loc[overlapping_df['Texture']!='rock']
 overlapping_df = overlapping_df.loc[overlapping_df['Texture']!='top soil']
+overlapping_df = overlapping_df.loc[overlapping_df['Texture']!='cobbles']
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Great time to see the mess:
@@ -275,7 +286,7 @@ for run in tqdm(range(num_runs)):
 similarity_matrix = np.zeros((overlapping_df.shape[0], overlapping_df.shape[0]))
 for i in range(overlapping_df.shape[0]):
     for j in range(overlapping_df.shape[0]):
-        similarity_matrix[i, j] = np.sum(cluster_assignments[i, :] == cluster_assignments[j, :]) / num_runs
+        similarity_matrix[i, j] = np.sum(cluster_assignments[i, :] == cluster_assignments[j, :]) / (num_runs * n_clalgs)
 
 # Consensus Clustering
 meta_cluster = AgglomerativeClustering(n_clusters=nmeta, metric='precomputed', linkage='complete')
@@ -285,6 +296,7 @@ meta_cluster.fit(1 - similarity_matrix)  # Use dissimilarity
 overlapping_df['meta_cluster'] = meta_cluster.labels_
 cluster_means = overlapping_df.groupby('meta_cluster')['rho'].mean()
 cluster_order = cluster_means.rank(method='dense').astype(int)
+print(cluster_means[cluster_order-1])
 overlapping_df['cluster'] = overlapping_df['meta_cluster'].map(cluster_order.to_dict())
 
 #overlapping_df['cluster'] = overlapping_df['meta_cluster'].replace({0: 3, 1: 0, 2: 2, 3: 1, 4: 4})
@@ -326,6 +338,7 @@ overlapping_df['cluster'] = overlapping_df['meta_cluster'].map(cluster_order.to_
 
 data_for_viz = data.copy()
 data_for_viz['cluster'] = overlapping_df['cluster']
+data_for_viz['log_rho'] = np.log10(data_for_viz['rho'])
 
 #sns.pairplot(data_for_viz, hue='cluster')
 
@@ -334,12 +347,20 @@ sns.violinplot(x='cluster', y='rho', data=data_for_viz)
 plt.title('Violin Plot of rho by Cluster')
 plt.savefig(plt_dir / '01_violin_plot_rho_by_cluster.png', dpi=300, bbox_inches='tight')
 
-fig, axs = plt.subplots(nrows=len(columns_to_use), figsize=(10, 15))
+fig, axs = plt.subplots(nrows=len(columns_to_use), figsize=(8.5, 11))
 
-for i, col in enumerate(columns_to_use):  # Skip 'rho'
+for i, col in enumerate(columns_to_use[0:-1]):  # Skip 'rho'
     sns.countplot(x='cluster', hue=col, data=data_for_viz, ax=axs[i])
-    axs[i].set_title(f'Counts of {col} by Cluster')
-    axs[i].legend(title=col, bbox_to_anchor=(1.05, 1), loc='upper left')
+    axs[i].set_title(f'Counts of {col.replace("_"," ")} by Meta Cluster')
+    axs[i].legend(title='Legend', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Add the rho violin plots
+axs[3] = sns.violinplot(x='cluster', y='rho', data=data_for_viz, palette=cc, hue='cluster', legend=False)
+#axs[3].set_yscale('log')
+#axs[3].set_ylim(0, 4)
+#axs[3].yaxis.set_major_formatter(FuncFormatter(format_log_tick))
+axs[3].set_ylabel(r'Resistivity, $\rho\, [\Omega\cdot\mathrm{m}]$')
+plt.title('Violin Plot of Electrical Resistivity by Meta Cluster')
 
 plt.tight_layout()
 plt.savefig(plt_dir / '01_count_plots_by_cluster.png', dpi=300, bbox_inches='tight')
@@ -371,15 +392,16 @@ plt.savefig(plt_dir / '01_similarity_matrix_heatmap.png', dpi=300, bbox_inches='
 average_similarity = np.mean(similarity_matrix, axis=1)
 print("Average similarity score per data point:", average_similarity.mean())
 
-# Assuming you have a way to convert 'data_matrix' back to its original space if needed for silhouette
-# If 'data_matrix' itself can be directly used, then just use it as is
+median_similarity = np.median(similarity_matrix, axis=1)
+print("Median similarity score per data point:", median_similarity.mean())
+
 silhouette_avg = silhouette_score(data_matrix, meta_cluster.labels_)
 print("Average silhouette score for consensus clustering:", silhouette_avg)
 
 # CDF of the similarity scores
 # Flatten the updated similarity matrix for CDF calculation
-flat_similarity_scores = similarity_matrix[np.triu_indices_from(similarity_matrix, k=1)]
-sorted_scores = np.sort(flat_similarity_scores)
+# flat_similarity_scores = similarity_matrix[np.triu_indices_from(similarity_matrix, k=1)]
+# sorted_scores = np.sort(flat_similarity_scores)
 
 # # Calculate the CDF values
 # cdf = np.arange(1, len(sorted_scores)+1) / len(sorted_scores)
@@ -424,7 +446,7 @@ for id, loc in tqdm(aem_wells_use.iterrows()):
             thicks = np.zeros(nmeta)
             # Need to add up thickness for each cluster
             for k, intv in log[log.overlap].iterrows():
-                if intv['Texture'] in ['top soil', 'unknown'] : continue
+                if intv['Texture'] in ['top soil', 'rock', 'cobbles', 'unknown'] : continue
                 cluster = overlapping_df.loc[overlapping_df.UID == intv.UID, 'cluster'].iloc[0]
                 thick = min(pixel['DEP_BOT'], intv['LITH_BOT_DEPTH_m']) - max(pixel['DEP_TOP'], intv['LITH_TOP_DEPTH_m'])
                 thicks[cluster-1] += thick
@@ -470,8 +492,20 @@ for s in tqdm(range(0,1000)):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
+# # Combine clusters 2 & 3
+# merged_vals = rho_dict[2] + rho_dict[3]
+#
+# # 2. Build a new dict manually
+# rho_dict = {
+#     0: rho_dict[0],
+#     1: rho_dict[1],
+#     3: merged_vals,     # New merged cluster at index 2
+#     4: rho_dict[4]       # Old cluster 4 becomes index 3
+# }
+
 # Rename Clusters
 cluster_names = ['1 - Fine-grained', '2 - Mixed Fine', '3 - Sand', '4 - Mixed Coarse', '5 - Very Coarse']
+#cluster_names = ['1 - Fine-grained', '2 - Mixed Fine', '3 - Mixed Coarse', '4 - Very Coarse']
 tex_names = [name.split('-')[1].strip().replace(' ','_') for name in cluster_names]
 
 # Loop over data adding to histogram, fit and save dist
@@ -480,12 +514,11 @@ hplt, hax = plt.subplots(figsize=(12, 8))
 fit_dists = {}
 hax.grid(which='both', linestyle='-', linewidth='0.5', color='lightgrey')
 hist_patches = []
-# order by median....
 
-for tex in sorted(rho_dict.keys(), key=lambda k: np.median(rho_dict[k])):  # by median...
+for tex in rho_dict.keys():
 
     bins = np.logspace(np.log10(np.min(rho_dict[tex])), np.log10(np.max(rho_dict[tex])), num=40)
-    ptch = hax.hist(rho_dict[tex], bins=bins, alpha=0.5, density=True, zorder=2, label=cluster_names[tex])
+    ptch = hax.hist(rho_dict[tex], bins=bins, alpha=0.5, density=True, zorder=2, label=cluster_names[tex], color=cc[tex])
     hist_patches.extend(ptch[2])
 
     if tex<4:
@@ -494,10 +527,8 @@ for tex in sorted(rho_dict.keys(), key=lambda k: np.median(rho_dict[k])):  # by 
         shape, loc, scale = fit_lognormal_with_constraints(rho_dict[tex])
     x = np.linspace(0, 500, 1000)
     y = lognorm.pdf(x, s=shape, loc=loc, scale=scale)
-    plt.plot(x, y, zorder=2, color=ptch[2][0].get_facecolor())
+    plt.plot(x, y, zorder=2, color=cc[tex])
     fit_dists[tex] = (shape, loc, scale)
-    # For Later
-    #print(tex, ptch[2][0].get_facecolor())
     print(tex, shape, loc, scale)
 hax.set_xscale('log')
 medians = [round(np.median(rho_dict[tex])) for tex in rho_dict.keys()]
@@ -505,7 +536,7 @@ newticks = [10,20,50,100,150,200,300,400]
 plt.xticks(newticks, [f'{t}' for t in newticks])
 hax.set_xlim(10,400)
 
-hax.set_xlabel(r'Resistivity (log scale), $\rho$', fontsize=15)
+hax.set_xlabel(r'Resistivity (log scale), $\rho\, [\Omega\cdot\mathrm{m}]$', fontsize=15)
 hax.set_ylabel('Density', fontsize=15)
 hax.legend(fontsize=13, title='Texture Clusters', title_fontsize=15)
 hplt.tight_layout()

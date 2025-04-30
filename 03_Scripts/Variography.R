@@ -30,14 +30,14 @@ locs <- unique(locs[,c('Line','ID','X','Y')])
 
 #-- Loop over classes
 tex <- lapply(classes, function(class){
-  fname <- paste0('t2p_',class,'_layavg.out')
-  layavg <- read.table(file.path(mdir, fname),header = T)
-  layavg <- merge(layavg, locs, by.x='Well', by.y='ID')
+  fname <- paste0('t2p_',class,'_layavg.csv')
+  layavg <- read.csv(file.path(mdir, fname),header = T)
+  layavg <- merge(layavg[c('Well','Layer1')], locs, by.x='Well', by.y='ID')
   layavg_long <- data.frame(
     X = layavg$X,
     Y = layavg$Y,
     texture = class,
-    value = layavg$X1
+    value = layavg$Layer1
   )
   # Remove rows where value is -999 (missing data)
   layavg_long <- layavg_long[layavg_long$value >= 0.0,]
@@ -53,7 +53,7 @@ tex <- setNames(tex, classes)
 #-------------------------------------------------------------------------------------------------#
 # FINE Texture Class
 vgm_fine_emp <- variogram(value ~ 1, data = tex[["FINE"]], width=600)
-vgm_fine_model <- vgm(model = "Exp", nugget = 0.0, range = 3000, psill = 0.1)
+vgm_fine_model <- vgm(model = "Exp", nugget = 0.0, range = 2000, psill = 0.1)
 vgm_fine_model <- fit.variogram(vgm_fine_emp, vgm_fine_model)
 plot(vgm_fine_emp, vgm_fine_model, main = "FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -61,15 +61,15 @@ plot(vgm_fine_emp, vgm_fine_model, main = "FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # MIXED_FINE Texture Class
 vgm_mf_emp <- variogram(value ~ 1, data = tex[["MIXED_FINE"]], width=600)
-vgm_mf_model <- vgm(model = "Exp", nugget = 0.0, range = 1000, psill = 0.15)
+vgm_mf_model <- vgm(model = "Exp", nugget = 0.0, range = 2000, psill = 0.15)
 vgm_mf_model <- fit.variogram(vgm_mf_emp, vgm_mf_model)
 plot(vgm_mf_emp, vgm_mf_model, main = "MIXED_FINE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 
 #-------------------------------------------------------------------------------------------------#
 # SAND Texture Class
-vgm_sand_emp <- variogram(value ~ 1, data = tex[["SAND"]], width=300)
-vgm_sand_model <- vgm(model = "Exp", nugget = 0, range = 1000, psill = 0.1)
+vgm_sand_emp <- variogram(value ~ 1, data = tex[["SAND"]], width=500)
+vgm_sand_model <- vgm(model = "Exp", nugget = 0, range = 2000, psill = 0.1)
 vgm_sand_model <- fit.variogram(vgm_sand_emp, vgm_sand_model)
 plot(vgm_sand_emp, vgm_sand_model, main = "SAND Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -77,7 +77,7 @@ plot(vgm_sand_emp, vgm_sand_model, main = "SAND Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # MIXED_COARSE Texture Class
 vgm_mc_emp <- variogram(value ~ 1, data = tex[["MIXED_COARSE"]], width=500)
-vgm_mc_model <- vgm(model = "Exp", nugget = 0.0, range = 1000, psill = 0.1)
+vgm_mc_model <- vgm(model = "Exp", nugget = 0.0, range = 2000, psill = 0.1)
 vgm_mc_model <- fit.variogram(vgm_mc_emp, vgm_mc_model)
 plot(vgm_mc_emp, vgm_mc_model, main = "MIXED_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -85,7 +85,7 @@ plot(vgm_mc_emp, vgm_mc_model, main = "MIXED_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
 # VERY_COARSE Texture Class
 vgm_vc_emp <- variogram(value ~ 1, data = tex[["VERY_COARSE"]], width=600)
-vgm_vc_model <- vgm(model = "Exp", nugget = 0.0, range = 1000, psill = 0.1)
+vgm_vc_model <- vgm(model = "Exp", nugget = 0.0, range = 2000, psill = 0.1)
 vgm_vc_model <- fit.variogram(vgm_vc_emp, vgm_vc_model)
 plot(vgm_vc_emp, vgm_vc_model, main = "VERY_COARSE Texture Variogram")
 #-------------------------------------------------------------------------------------------------#
@@ -164,7 +164,7 @@ ggplot(empirical_df, aes(x = dist, y = gamma, color = texture)) +
 #-------------------------------------------------------------------------------------------------#
 #-- Write out variogram model parameters for Texture2Par
 # Define the number of nearest neighbors (nnear)
-nnear <- 32
+nnear <- 300
 
 # Create a function to format each variogram entry
 format_variogram_entry <- function(texture, vgm_model) {

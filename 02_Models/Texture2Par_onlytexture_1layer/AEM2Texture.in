@@ -3,9 +3,9 @@ rho_log_file  ..\..\05_Outputs\AEMLog_noUnsat.dat  # Reading this
 tex_out_file  logs_and_AEM_5classes.dat            # Writing this
 prv_log_file  LithoLog_5classes_nocoloc.dat        # Will copy this over first (NONE if not needed)
         Texture       Shape    Location       Scale
-Fine               0.284274    0.000000   31.463442
-Mixed_Fine         0.078629    0.000000   92.786505
-Sand               0.079957    0.000000  133.301142
-Mixed_Coarse       0.088024   23.079864  144.777044
-Very_Coarse        0.691898  192.833903   86.835766
+Fine               0.284487    0.000000   31.790578
+Mixed_Fine         0.129485    0.000000   76.562445
+Sand               0.082697    0.000000  120.040911
+Mixed_Coarse       0.100896    0.000000  147.877083
+Very_Coarse        0.695543  190.029113  113.941445
 

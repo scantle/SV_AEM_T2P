@@ -36,8 +36,7 @@ line_bot_file = data_dir / 'bottom_scraper.in'
 aem_sharp_file = data_dir / 'SCI_Sharp_10_West_I01_MOD_inv.xyz'
 aem_litho_file = data_dir / 'AEM_WELL_LITHOLOGY_csv_WO2_20220710_CVHM.csv'
 aem_tprobs_file = mod_dir / 'AEM2Texture' / 'AEM_TextureProbs.dat'
-aem_cf_file = Path('C:/Users/lelan/Box/Research/Scott Valley/Data/survey-area-2-aem-data-provisional_20230309'
-                   '/04_XYZ_Ascii/04_Lithology and Cluster Model/West_Scott_CF_ctg.xyz')
+aem_cf_file = data_dir / 'West_Scott_CF_ctg.xyz'
 
 # Shapefiles
 aem_sharp_sv_file = shp_dir / 'aem_sv_Sharp_I01_MOD_inv_UTM10N_idwwl.shp'
