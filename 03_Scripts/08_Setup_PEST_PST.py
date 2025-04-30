@@ -19,6 +19,7 @@ from T2P_funcs import t2p_par2par, t2p_par2par_frompar
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Directories
+orig_dir = os.getcwd()
 data_dir = Path('./01_Data/')
 model_dir = Path('./02_Models/SVIHM_MF/')
 out_dir = Path('./05_Outputs/PEST/')
@@ -40,7 +41,7 @@ yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
 # Out
-pst_file = 'svihm_t2p06.pst'
+pst_file = 'svihm_t2p09.pst'
 
 vertical_well_pairs = [
     ('ST201', 'ST201_2'),
@@ -176,10 +177,10 @@ t2p_parameters = {
     'KminMC1_M' : [1.0, 100.0, 1.0, 'K_M'],
     'KminVC1_M' : [1.0, 100.0, 10.0, 'K_M'],
     'AnisoVC1'  : [1.0, 10.0, 5.0, 'Aniso'],
-    'AnisoMC1_M': [1.0, 10.0, 5.0, 'Aniso_M'],
-    'AnisoSC1_M': [1.0, 10.0,  1.0, 'Aniso_M'],
-    'AnisoMF1_M': [1.0, 10.0,  1.0, 'Aniso_M'],
-    'AnisoFF1_M': [1.0, 10.0,  1.0, 'Aniso_M'],
+    'AnisoMC1_M': [1.0, 20.0, 5.0, 'Aniso_M'],
+    'AnisoSC1_M': [1.0, 20.0,  1.0, 'Aniso_M'],
+    'AnisoMF1_M': [1.0, 20.0,  1.0, 'Aniso_M'],
+    'AnisoFF1_M': [1.0, 20.0,  1.0, 'Aniso_M'],
     'SsFF1'     : [1e-5, 1e-2, 1e-4, 'Ss'],
     'SsMF1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
     'SsSC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
@@ -231,6 +232,7 @@ sfr_parameters = {
     'sbcm29': ['tied','sbcm27', 'mSFR'],
     'sbcm30': [0.1, 10, 1.0, 'mSFR'],
 }
+
 # Read in texture distribution parameters
 tex_dist_params = pd.read_table(tex_dists_file, sep="\\s+", skiprows=1)
 tex_scale_ranges = pd.read_table(tex_scale_range_file, sep="\\s+")  # 95% confidence intervals
@@ -260,6 +262,9 @@ pest_parameters = t2p_parameters | sfr_parameters | aem2texture_parameters | pvl
 #----------------------------------------------------------------------------------------------------------------------#
 # Observations
 #----------------------------------------------------------------------------------------------------------------------#
+
+# Change back to project directory
+os.chdir(orig_dir)
 
 # Load model & create spatial reference
 gwf = flopy.modflow.Modflow.load((model_name + '.nam'), version='mfnwt', load_only=['dis','bas6'], model_ws=model_dir)
@@ -343,23 +348,23 @@ str_by['obsval'] = np.log(str_by['obsval'] + 0.1)
 
 # Set some variables to reuse
 qts = [0.40, 0.80]
-cvs = [0.1, 0.2, 0.4]
+cvs = [0.1, 0.2, 0.5]
 
 # Get weights, groups
 str_fj['obsgnme'], str_fj['wt'] = cv_stream_weights(str_fj, qts, cvs, 'fj')
 str_as['obsgnme'], str_as['wt'] = cv_stream_weights(str_as, qts, cvs, 'as')
 str_by['obsgnme'], str_by['wt'] = cv_stream_weights(str_by, qts, cvs, 'by')
 
-# Re-weight
-str_fj.loc[str_fj['obsgnme']=='fj_low', 'wt'] = 1/np.sqrt(np.log(1+0.10**2))
-str_as.loc[str_as['obsgnme']=='as_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
-str_by.loc[str_by['obsgnme']=='by_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
-str_fj.loc[str_fj['obsgnme']=='fj_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
-str_as.loc[str_as['obsgnme']=='as_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
-str_by.loc[str_by['obsgnme']=='by_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
-str_fj.loc[str_fj['obsgnme']=='fj_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
-str_as.loc[str_as['obsgnme']=='as_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
-str_by.loc[str_by['obsgnme']=='by_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
+# Re-weight, log version
+# str_fj.loc[str_fj['obsgnme']=='fj_low', 'wt'] = 1/np.sqrt(np.log(1+0.10**2))
+# str_as.loc[str_as['obsgnme']=='as_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
+# str_by.loc[str_by['obsgnme']=='by_low', 'wt'] = 1/np.sqrt(np.log(1+0.12**2))
+# str_fj.loc[str_fj['obsgnme']=='fj_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
+# str_as.loc[str_as['obsgnme']=='as_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
+# str_by.loc[str_by['obsgnme']=='by_med', 'wt'] = 1/np.sqrt(np.log(1+0.15**2))
+# str_fj.loc[str_fj['obsgnme']=='fj_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
+# str_as.loc[str_as['obsgnme']=='as_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
+# str_by.loc[str_by['obsgnme']=='by_high','wt'] = 1/np.sqrt(np.log(1+0.20**2))
 
 # Zero some impossible dates
 str_fj = zero_weight_dates(str_fj, fj_impossible_dates)
@@ -367,9 +372,11 @@ str_fj = zero_weight_dates(str_fj, fj_impossible_dates)
 # Adjust weights where necessary
 # Tolley et al. (2019) found some of the smaller stream obs near 0 created Inf weights
 # They assigned the weight of low flow of the non-USGS gauges to be the median FJ low flow weight
-# str_as.loc[str_as['obsgnme']=='as_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
-# str_by.loc[str_by['obsgnme']=='by_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
+str_as.loc[str_as['obsgnme']=='as_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
+str_by.loc[str_by['obsgnme']=='by_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
 
+# Create a maximum value for FJ low flows at 10 cfs
+str_fj.loc[str_fj.obsval <= 10.0, 'wt'] = 1 / ((10 * cvs[0]) ** 2)
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup FJ volume observations
@@ -390,7 +397,7 @@ thresholds = fj_monthly['obsval'].quantile(qts).values
 fj_monthly['obsgnme'] = 'FJMONVOL_H'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[1], 'obsgnme'] = 'FJMONVOL_M'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[0], 'obsgnme'] = 'FJMONVOL_L'
-fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = 1e-8
+fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = 1e-10
 fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_M', 'wt'] = 1e-7
 fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_L', 'wt'] = 1e-6
 
@@ -418,8 +425,8 @@ metagroup_mapping = {
     # Head observations
     "SV_HEADS": "HEADS",
     "QV_HEADS": "HEADS",
-    "HEAD_DIFFS": "HEADS",
-    "VH_DIFFS": "HEADS",
+    "HEAD_DIFFS": "HEAD_DIFFS",
+    "VH_DIFFS": "VH_DIFFS",
     "fj_low": "STREAMFLOW",
     "fj_med": "STREAMFLOW",
     "fj_high": "STREAMFLOW",
@@ -429,24 +436,24 @@ metagroup_mapping = {
     "by_low": "STREAMFLOW",
     "by_med": "STREAMFLOW",
     "by_high": "STREAMFLOW",
-    "FJMONVOL_L": "STREAMFLOW",
-    "FJMONVOL_M": "STREAMFLOW",
-    "FJMONVOL_H": "STREAMFLOW",
-    "FJYRLYVOL": "STREAMFLOW"
+    "FJMONVOL_L": "STREAMVOL",
+    "FJMONVOL_M": "STREAMVOL",
+    "FJMONVOL_H": "STREAMVOL",
+    "FJYRLYVOL":  "STREAMVOL"
 }
 
 # Assign metagroup labels
 obs_df["metagroup"] = obs_df["obsgnme"].map(metagroup_mapping)
 
-#target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
+target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
 obs_df.groupby('obsgnme').wt.sum()
 obs_df.groupby('metagroup').wt.sum()
 
-# obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weight,
-#                                                             'HEADDIFFS':target_weight,
-#                                                             'VH_DIFFS':target_weight,
-#                                                             'STREAMFLOW':target_weight,
-#                                                            'STREAMVOL':target_weight/1e9})
+obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weight,
+                                                            'HEAD_DIFFS':target_weight,
+                                                            'VH_DIFFS':target_weight,
+                                                            'STREAMFLOW':target_weight/1.5e5,
+                                                           'STREAMVOL':target_weight/1.1e8})
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup PEST
@@ -456,12 +463,12 @@ obs_df.groupby('metagroup').wt.sum()
 os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/Setup/')
 
 # Write INS files
-# write_ts_ins_file(str_fj, origin_date, 2, 'Streamflow_FJ_SVIHM.ins', columns='86:99')
-# write_ts_ins_file(str_as, origin_date, 2, 'Streamflow_AS_SVIHM.ins', column_str='86:99')
-# write_ts_ins_file(str_by, origin_date, 2, 'Streamflow_BY_SVIHM.ins', column_str='86:99')
-write_ts_ins_file(str_fj, origin_date,0, 'Streamflow_FJ_SVIHM_MidptFlow_LOG.ins', markers='w')
-write_ts_ins_file(str_as, origin_date,0, 'Streamflow_AS_SVIHM_MidptFlow_LOG.ins', markers='w')
-write_ts_ins_file(str_by, origin_date,0, 'Streamflow_BY_SVIHM_MidptFlow_LOG.ins', markers='w')
+write_ts_ins_file(str_fj, origin_date, 2, 'Streamflow_FJ_SVIHM.ins', column_str='86:99')
+write_ts_ins_file(str_as, origin_date, 2, 'Streamflow_AS_SVIHM.ins', column_str='86:99')
+write_ts_ins_file(str_by, origin_date, 2, 'Streamflow_BY_SVIHM.ins', column_str='86:99')
+# write_ts_ins_file(str_fj, origin_date,0, 'Streamflow_FJ_SVIHM_MidptFlow_LOG.ins', markers='w')
+# write_ts_ins_file(str_as, origin_date,0, 'Streamflow_AS_SVIHM_MidptFlow_LOG.ins', markers='w')
+# write_ts_ins_file(str_by, origin_date,0, 'Streamflow_BY_SVIHM_MidptFlow_LOG.ins', markers='w')
 write_static_ins_file(fj_vol, 'Streamflow_FJ_SVIHM_VOL.ins', markers='w')
 write_static_ins_file(hobs_diff, 'HobData_SVIHM_DIFF.ins', markers='w')
 write_static_ins_file(vhdiff_df, 'HobData_SVIHM_VDIFF.ins', markers='w')
@@ -471,7 +478,7 @@ write_hobs_ins_file(hobs_df, 'HobData_SVIHM.ins')
 # Let pyemu detect all observations & parameters, it serves as a check on everything we're doing
 # We can then update the groups, weights, values, etc
 pst = pyemu.Pst.from_io_files(tpl_files=['t2p_par2par.tpl',
-                                         'sfr2par_noUPW.tpl',
+                                         'sfr2par.tpl',
                                          'AEM2Texture.tpl',
                                          'SVIHM_PVAL.tpl'
                                          ],
@@ -480,17 +487,17 @@ pst = pyemu.Pst.from_io_files(tpl_files=['t2p_par2par.tpl',
                                         Path('./SVIHM/preproc/AEM2Texture.in'),
                                         Path('./SVIHM/MODFLOW/SVIHM.pvl')
                                         ],
-                              ins_files=['Streamflow_FJ_SVIHM_MidptFlow_LOG.ins',
-                                         'Streamflow_AS_SVIHM_MidptFlow_LOG.ins',
-                                         'Streamflow_BY_SVIHM_MidptFlow_LOG.ins',
+                              ins_files=['Streamflow_FJ_SVIHM.ins',
+                                         'Streamflow_AS_SVIHM.ins',
+                                         'Streamflow_BY_SVIHM.ins',
                                          'Streamflow_FJ_SVIHM_VOL.ins',
                                          'HobData_SVIHM.ins',
                                          'HobData_SVIHM_DIFF.ins',
                                          'HobData_SVIHM_VDIFF.ins',
                                          ],
-                              out_files=[Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM_MidptFlow_LOG.out'),
-                                         Path('./SVIHM/MODFLOW/Streamflow_AS_SVIHM_MidptFlow_LOG.out'),
-                                         Path('./SVIHM/MODFLOW/Streamflow_BY_SVIHM_MidptFlow_LOG.out'),
+                              out_files=[Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM.dat'),
+                                         Path('./SVIHM/MODFLOW/Streamflow_AS_SVIHM.dat'),
+                                         Path('./SVIHM/MODFLOW/Streamflow_BY_SVIHM.dat'),
                                          Path('./SVIHM/MODFLOW/Streamflow_FJ_SVIHM_VOL.out'),
                                          Path('./SVIHM/MODFLOW/HobData_SVIHM.dat'),
                                          Path('./SVIHM/MODFLOW/HobData_SVIHM_DIFF.out'),
@@ -580,15 +587,25 @@ obs_df = obs_df.set_index('obsnme')
 pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[["obsval", "wt", "obsgnme"]].to_numpy()
 
 # Add regularization
-pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'MFR'])  # fancy pyemu helper
-pst.prior_information['weight'] *= 50
-#pst.prior_information.loc['sysc1','weight'] *= 0.25
+pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'Sy', 'PLP'])  # fancy pyemu helper
+pst.prior_information['weight'] *= 100
+pst.prior_information.loc['sysc1','weight'] *= 0.5
 
 # Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/05/svihm_t2p05.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+calpar = pd.read_table(Path('../RunRecords/07/svihm_t2p07_iter2.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
 #calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
 print(t2p_par2par_frompar(calpar))
 pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
+
+# overwrite a few
+pst.parameter_data.loc[pst.parameter_data.index=='khp1','parval1'] = 93.0
+#pst.parameter_data.loc[pst.parameter_data.index=='kvp1','parval1'] = 62.0
+pst.parameter_data.loc[pst.parameter_data.pargp=='mSFR','parval1'] = 1.0
+for key in aem2texture_parameters.keys():
+    print(pst.parameter_data.loc[pst.parameter_data.index==key.lower(),'parval1'])
+    print(aem2texture_parameters[key][2])
+    pst.parameter_data.loc[pst.parameter_data.index == key.lower(), 'parval1'] = aem2texture_parameters[key][2]
+    print(pst.parameter_data.loc[pst.parameter_data.index == key.lower(), 'parval1'])
 
 pst.model_command = [str(Path("forward_run.bat"))]
 
