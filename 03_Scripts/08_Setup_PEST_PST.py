@@ -41,7 +41,7 @@ yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
 # Out
-pst_file = 'svihm_t2p09.pst'
+pst_file = 'svihm_t2p10.pst'
 
 vertical_well_pairs = [
     ('ST201', 'ST201_2'),
@@ -546,8 +546,8 @@ for param, value in pest_parameters.items():
 # pst.parameter_groups.loc['K_M','derinc'] = 0.02
 # pst.parameter_groups.loc['Sy','derinc'] = 0.02
 # pst.parameter_groups.loc['PLP','derinc'] = 0.02
-# pst.parameter_groups.loc['MFR','derinc'] = 0.02
-# pst.parameter_groups.loc['mSFR','derinc'] = 0.02
+pst.parameter_groups.loc['MFR','derinc'] = 0.02
+pst.parameter_groups.loc['mSFR','derinc'] = 0.02
 
 # Adjust scale, transformation of power-law parameters
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100       # parval now read in
@@ -587,9 +587,8 @@ obs_df = obs_df.set_index('obsnme')
 pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[["obsval", "wt", "obsgnme"]].to_numpy()
 
 # Add regularization
-pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'Sy', 'PLP'])  # fancy pyemu helper
+pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'Sy', 'PLP', 'mSFR', 'MFR'])  # fancy pyemu helper
 pst.prior_information['weight'] *= 100
-pst.prior_information.loc['sysc1','weight'] *= 0.5
 
 # Update starting values from parfile
 calpar = pd.read_table(Path('../RunRecords/07/svihm_t2p07_iter2.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
@@ -602,10 +601,7 @@ pst.parameter_data.loc[pst.parameter_data.index=='khp1','parval1'] = 93.0
 #pst.parameter_data.loc[pst.parameter_data.index=='kvp1','parval1'] = 62.0
 pst.parameter_data.loc[pst.parameter_data.pargp=='mSFR','parval1'] = 1.0
 for key in aem2texture_parameters.keys():
-    print(pst.parameter_data.loc[pst.parameter_data.index==key.lower(),'parval1'])
-    print(aem2texture_parameters[key][2])
     pst.parameter_data.loc[pst.parameter_data.index == key.lower(), 'parval1'] = aem2texture_parameters[key][2]
-    print(pst.parameter_data.loc[pst.parameter_data.index == key.lower(), 'parval1'])
 
 pst.model_command = [str(Path("forward_run.bat"))]
 

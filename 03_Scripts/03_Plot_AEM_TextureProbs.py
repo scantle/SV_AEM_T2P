@@ -9,6 +9,7 @@ from tqdm import tqdm
 from pathlib import Path
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import to_rgb
 
 import os
 os.chdir("03_Scripts/")
@@ -47,13 +48,11 @@ use_mf_top_bot = True
 # Models
 base_dir = mod_dir / 'SVIHM_MF'
 
+cc = ['#df263e', '#e37e26', '#e3c128', '#6da14d', '#5289db']
+
 # -------------------------------------------------------------------------------------------------------------------- #
 # Functions/Classes
 # -------------------------------------------------------------------------------------------------------------------- #
-
-def create_custom_cmap(color, alpha_range):
-    colors_with_alpha = [(color[0], color[1], color[2], alpha) for alpha in alpha_range]
-    return LinearSegmentedColormap.from_list('custom_cmap', colors_with_alpha)
 
 def nearest_cell(x, mf):
     #print(geometry.values.to_numpy())
@@ -145,7 +144,8 @@ fig, axd = plt.subplot_mosaic([['p1', 'map'], ['p2', 'map'], ['p3', 'map'], ['p4
 lmap = svihm_domain.plot(color='lightgray', ax=axd['map'])
 lmap = aem_line_shp.plot(color='darkgray', ax=axd['map'])
 lmap.set_axis_off()
-prob_cmaps = ['Blues','Greens','Oranges','Purples','Reds']
+#prob_cmaps = ['Blues','Greens','Oranges','Purples','Reds']
+prob_cmaps = [LinearSegmentedColormap.from_list(f'cmap_{c}', [(1,1,1), to_rgb(c)]) for c in cc]
 
 # lne = 100701
 # df = aem_long[aem_long.SUBLINE_NO == lne]

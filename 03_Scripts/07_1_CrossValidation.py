@@ -21,7 +21,7 @@ t2p_dir = Path('./02_Models/Texture2Par_onlytexture_2D/')
 t2p_inf = t2p_dir / 'svihm.t2p'
 t2p_log = t2p_dir / 'logs_and_AEM_5classes.dat'
 t2p_path = Path('./02_Models/Bin/Texture2Par.exe')
-run_dir = Path('./02_Models/Test/')
+run_dir = Path('./02_Models/CV_runs/')
 run_dir.mkdir(parents=True, exist_ok=True)
 
 classes = ['Fine', 'Mixed_Fine', 'Sand', 'Mixed_Coarse', 'Very_Coarse']
@@ -178,7 +178,7 @@ for n in N_LIST:
 
         # Setup dataset
         folddf = basecase.df.copy()
-        loc_ids = [idx for idx, tag in enumerate(fold_tag) if tag==f]
+        loc_ids = [idx for idx, tag in enumerate(fold_tag) if tag != f]
         folddf = folddf[folddf.ID.isin(loc_ids)]
         foldcase = t2py.Dataset(classes)
         foldcase.add_wells_by_df(folddf, name_col='Location', fill_missing=False)
