@@ -157,7 +157,7 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
     if use_mf_top_bot:
         ylim = (df.bot2.min(), df.ELEVATION.max())
     else:
-        ylim = (df.ELEVATION.min(), df.ELEVATION.max())
+        ylim = (df.ELEVATION.min()-600, df.ELEVATION.max())
     line_max = df.LINE_DIST.iloc[df.LINE_DIST.abs().argmax()]
     line_min = df.LINE_DIST.iloc[df.LINE_DIST.abs().argmin()]
     line_max += 0.05 * np.sign(line_max)
@@ -172,25 +172,34 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                                   title=f'Flight Line: {lne}',
                                   xlim=(line_min, line_max),
                                   ylim=ylim,
+                                  clim=(1,1000),
                                   ylabel='Elevation (m)',
-                                  colorbar_label='Resistivity (ohm-m)', hide_xticks=True)
+                                  colorbar_label='Resistivity (ohm-m)',
+                                  doi_alpha=1.0,
+                                  hide_xticks=True)
     cb_list.append(cb)
     #plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
-    #plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
+    plot_line_by_depth(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
     # plot_wl(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'aemwlidw', 'ELEVATION', fmt='r--')
     #plot_wl(axd['p1'], df, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
     #plot_wl(axd['p1'], df, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
 
     #-- Loop over Textures
     for i, tex in enumerate(tex_classes):
-        ln, cb = plot_slice_rect(fig, axd[f'p{i+2}'], rect=df.AEMRect, values=df[tex], cmap=prob_cmaps[i],
+        # ln, cb = plot_slice_rect(fig, axd[f'p{i+2}'], rect=df.AEMRect, values=df[tex], cmap=prob_cmaps[i],
+        #                 xlim=(line_min, line_max),
+        #                 ylim=ylim,
+        #                 ylabel='Elevation (m)',
+        #                 colorbar_label=f'{tex} Prob.', hide_xticks=True, clim=(0,1))
+        ln, cb = plot_slice_rect_doi(fig, axd[f'p{i+2}'], rect=df.AEMRect, values=df[tex], cmap=prob_cmaps[i], doi_values=df.doi_elev,
                         xlim=(line_min, line_max),
                         ylim=ylim,
                         ylabel='Elevation (m)',
+                        doi_alpha=1.0,
                         colorbar_label=f'{tex} Prob.', hide_xticks=True, clim=(0,1))
         cb_list.append(cb)
         #plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
-        #plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
+        plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
         #plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
         #plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
 

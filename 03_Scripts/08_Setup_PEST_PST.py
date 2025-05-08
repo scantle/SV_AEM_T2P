@@ -588,10 +588,12 @@ pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[
 
 # Add regularization
 pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'Sy', 'PLP', 'mSFR', 'MFR'])  # fancy pyemu helper
-pst.prior_information['weight'] *= 100
+pst.prior_information['weight'] *= 1000
+#pst.prior_information.loc[pst.prior_information.index.str.startswith('mfr'),'weight'] *= 10
+pst.prior_information.loc[pst.prior_information.pilbl=='sysc1','weight'] *= 0.75
 
 # Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/07/svihm_t2p07_iter2.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+calpar = pd.read_table(Path('../RunRecords/07/svihm_t2p07_iter1.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
 #calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
 print(t2p_par2par_frompar(calpar))
 pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
