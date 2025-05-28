@@ -19,6 +19,7 @@ dependencies:
   - scipy
   - scikit-learn
   - statsmodels >= 0.14
+  - pyshp
   - flopy
   - pyemu
   - kmodes
