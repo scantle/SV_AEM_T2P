@@ -33,6 +33,7 @@ as_file = svihm_ref_dir / 'Scott River Above Serpa Lane.txt'
 by_file = svihm_ref_dir / 'Scott River Below Youngs Dam.txt'
 tex_dists_file = Path('./05_Outputs/lognorm_dist_clustered.par')
 tex_scale_range_file = Path('./05_Outputs/lognorm_dist_clustered_scale_ranges.dat')
+hob_cache = out_dir / 'hobs_df_cached.pkl'
 
 # Model Info
 model_name = 'SVIHM'
@@ -274,11 +275,18 @@ end_date = origin_date + pd.DateOffset(months=gwf.nper)
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Head Observations
 
-hob_file = model_dir / "svihm.hob"
-print('Reading Hobs... (slow)')
-hob = flopy.modflow.ModflowHob.load(hob_file, model=gwf)
-print('Hobs read.')
-hobs_df = hob_to_df(hob, origin_date)
+if hob_cache.exists():
+    # load the cached DataFrame instead of re‐reading the HOB
+    print("Loading cached hobs_df from", hob_cache)
+    hobs_df = pd.read_pickle(hob_cache)
+else:
+    hob_file = model_dir / "svihm.hob"
+    print('Reading Hobs... (slow)')
+    hob = flopy.modflow.ModflowHob.load(hob_file, model=gwf)
+    print('Hobs read.')
+    hobs_df = hob_to_df(hob, origin_date)
+    hobs_df.to_pickle(hob_cache)
+    print("Cached hobs_df to", hob_cache)
 hobs_df = calculate_hob_weights(hobs_df, wt_dict, gwf.get_package('BAS6'), by_well=True, default_weight=100)
 hobs_df['obsgnme'] = 'SV_HEADS'
 hobs_df.loc[hobs_df.wellid.str.startswith('QV'), 'obsgnme'] = 'QV_HEADS'
@@ -299,7 +307,7 @@ hobs_diff['obsgnme'] = 'HEAD_DIFFS'
 hobs_diff['wt'] = hobs_diff['wt'] * 1.25
 
 # Keep G31 for head diffs
-hobs_diff.loc[hobs_diff['obsnme'].str.startswith('G31'),'wt'] = 1.25
+hobs_diff.loc[hobs_diff['obsnme'].str.startswith('G31'),'wt'] = hobs_diff['wt'].median()
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Vertical Head Difference Observations
@@ -369,14 +377,14 @@ str_by['obsgnme'], str_by['wt'] = cv_stream_weights(str_by, qts, cvs, 'by')
 # Zero some impossible dates
 str_fj = zero_weight_dates(str_fj, fj_impossible_dates)
 
+# Create a maximum value for FJ low flows at 10 cfs
+str_fj.loc[str_fj.obsval <= 10.0, 'wt'] = 1 / ((10 * cvs[0]) ** 2)
+
 # Adjust weights where necessary
 # Tolley et al. (2019) found some of the smaller stream obs near 0 created Inf weights
 # They assigned the weight of low flow of the non-USGS gauges to be the median FJ low flow weight
 str_as.loc[str_as['obsgnme']=='as_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
 str_by.loc[str_by['obsgnme']=='by_low','wt'] = str_fj.loc[str_fj['obsgnme']=='fj_low','wt'].median()
-
-# Create a maximum value for FJ low flows at 10 cfs
-str_fj.loc[str_fj.obsval <= 10.0, 'wt'] = 1 / ((10 * cvs[0]) ** 2)
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup FJ volume observations
@@ -397,7 +405,7 @@ thresholds = fj_monthly['obsval'].quantile(qts).values
 fj_monthly['obsgnme'] = 'FJMONVOL_H'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[1], 'obsgnme'] = 'FJMONVOL_M'
 fj_monthly.loc[fj_monthly['obsval'] <= thresholds[0], 'obsgnme'] = 'FJMONVOL_L'
-fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = 1e-10
+fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_H', 'wt'] = 1e-8
 fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_M', 'wt'] = 1e-7
 fj_monthly.loc[fj_monthly['obsgnme']=='FJMONVOL_L', 'wt'] = 1e-6
 
@@ -450,9 +458,9 @@ obs_df.groupby('obsgnme').wt.sum()
 obs_df.groupby('metagroup').wt.sum()
 
 obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weight,
-                                                            'HEAD_DIFFS':target_weight,
+                                                            'HEAD_DIFFS':target_weight/10,
                                                             'VH_DIFFS':target_weight,
-                                                            'STREAMFLOW':target_weight/1.5e5,
+                                                            'STREAMFLOW':target_weight/1.0e5,
                                                            'STREAMVOL':target_weight/1.1e8})
 
 #----------------------------------------------------------------------------------------------------------------------#
