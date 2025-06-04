@@ -88,7 +88,7 @@ def hob_to_df(hob, origin_date, out_file=None):
 
 #----------------------------------------------------------------------------------------------------------------------#
 
-def calculate_hob_weights(hobs_df, wt_dict, bas, out_dir=None):
+def calculate_hob_weights(hobs_df, wt_dict, bas, out_dir=None, by_well=False, default_weight=1.0, min_points=3):
     """
     Modify the weights in hobs_df based on predefined rules for selected wells.
 
@@ -110,6 +110,13 @@ def calculate_hob_weights(hobs_df, wt_dict, bas, out_dir=None):
         MODFLOW Basic Package object, used to check inactive cells.
     out_dir : Path or str, optional
         Directory where hydrograph plots should be saved. (no plots if None)
+    by_well: True/False, optional (default = False)
+        default_weight is assigned by well instead of by observation, i.e., observation weights are balanced
+        (normalized) across wells
+    default_weight: float, optional (default = 1.0)
+        Weight assigned to observations (if by_well is False) or by well (if by_well is True)
+    min_points: integer, optional (default = 3)
+        Minimum number of observations for a well to have a non-zero weight. count < min_points => wt = 0
 
     Returns
     -------
@@ -119,7 +126,10 @@ def calculate_hob_weights(hobs_df, wt_dict, bas, out_dir=None):
 
     # Create a copy of hobs_df to avoid modifying in place
     hobs_df = hobs_df.copy()
-    hobs_df['wt'] = 1.0
+    if by_well:
+        hobs_df['wt'] = default_weight / hobs_df.groupby('wellid')['obsnme'].transform('count')
+    else:
+        hobs_df['wt'] = default_weight
 
     # Track wells that were modified for reporting
     too_few_points = []
@@ -164,7 +174,7 @@ def calculate_hob_weights(hobs_df, wt_dict, bas, out_dir=None):
     # Process all wells for general conditions
     for wellid, well_df in hobs_df.groupby('wellid'):
         # Zero weights for wells with less than 3 data points
-        if well_df.shape[0] < 3:
+        if well_df.shape[0] < min_points:
             hobs_df.loc[hobs_df['wellid'] == wellid, "wt"] = 0.0
             too_few_points.append(wellid)
 

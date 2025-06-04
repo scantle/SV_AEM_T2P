@@ -191,8 +191,8 @@ t2p_parameters = {
     'SyFF1_M'   : [0.01, 1.0, 0.75, 'Sy_M'],
     'SyMC1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
     'SyVC1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
-    'KHp1'      : [0.75, 1.0, 0.93, 'PLP'],
-    'KVp1'      : [-1.0, -0.5, -0.62, 'PLP'],
+    'KHp1'      : [0.25, 1.0, 0.93, 'PLP'],
+    'KVp1'      : [-1.0, -0.15, -0.62, 'PLP'],
 }
 
 # Replicates par2par setup
@@ -279,14 +279,14 @@ print('Reading Hobs... (slow)')
 hob = flopy.modflow.ModflowHob.load(hob_file, model=gwf)
 print('Hobs read.')
 hobs_df = hob_to_df(hob, origin_date)
-hobs_df = calculate_hob_weights(hobs_df, wt_dict, gwf.get_package('BAS6'))
+hobs_df = calculate_hob_weights(hobs_df, wt_dict, gwf.get_package('BAS6'), by_well=True, default_weight=100)
 hobs_df['obsgnme'] = 'SV_HEADS'
 hobs_df.loc[hobs_df.wellid.str.startswith('QV'), 'obsgnme'] = 'QV_HEADS'
 
 # Lower contribution for a few wells
-hobs_df.loc[hobs_df['obsnme'].str.startswith('SCV_11'),'wt'] = 0.5
-hobs_df.loc[hobs_df['obsnme'].str.startswith('28P001M'),'wt'] = 0.5
-hobs_df.loc[hobs_df['obsnme'].str.startswith('SCV_5'),'wt'] = 0.5
+hobs_df.loc[hobs_df['obsnme'].str.startswith('SCV_11'),'wt'] *= 0.5
+hobs_df.loc[hobs_df['obsnme'].str.startswith('28P001M'),'wt'] *= 0.5
+hobs_df.loc[hobs_df['obsnme'].str.startswith('SCV_5'),'wt'] *= 0.5
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup Head Difference Observations
@@ -591,12 +591,12 @@ pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', '
 pst.prior_information['weight'] *= 1000
 #pst.prior_information.loc[pst.prior_information.index.str.startswith('mfr'),'weight'] *= 10
 pst.prior_information.loc[pst.prior_information.pilbl=='sysc1','weight'] *= 0.75
-pst.prior_information.loc[pst.prior_information.obgnme=='regulaemscal','weight'] *= 0.1
-pst.prior_information.loc[pst.prior_information.obgnme=='regulPLP','weight'] *= 0.1
-pst.prior_information.loc[pst.prior_information.obgnme=='regulmSFR','weight'] *= 0.1
+pst.prior_information.loc[pst.prior_information.obgnme=='regulaemscal','weight'] *= 0.25
+pst.prior_information.loc[pst.prior_information.obgnme=='regulPLP','weight'] *= 0.25
+pst.prior_information.loc[pst.prior_information.obgnme=='regulmSFR','weight'] *= 0.25
 
 # Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/10/svihm_t2p10_iter2.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+calpar = pd.read_table(Path('../RunRecords/10/svihm_t2p10_iter4.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
 #calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
 print(t2p_par2par_frompar(calpar))
 pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']

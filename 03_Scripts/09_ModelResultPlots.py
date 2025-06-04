@@ -26,7 +26,7 @@ shp_dir = data_dir / 'shapefiles'
 plt_dir = Path('04_Plots')
 svihm_dir = Path('../SVIHM/')  # External to project, local SVIHM Git repo
 svihm_ref_dir = svihm_dir / 'SVIHM_Input_Files/reference_data_for_plots/'
-model_dir = Path('//BEHEMOTH/Users/lelan/Documents/ModelRuns/SVIHM/2025_t2p_calibration/04_final/SVIHM/MODFLOW/')
+model_dir = Path('//BEHEMOTH/Users/lelan/Documents/ModelRuns/SVIHM/2025_t2p_calibration/10_init_iter4/SVIHM/MODFLOW/')
 tex_file_dir = model_dir / '../preproc/'
 
 # Texture files
