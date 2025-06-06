@@ -42,7 +42,7 @@ yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
 # Out
-pst_file = 'svihm_t2p11.pst'
+pst_file = 'svihm_t2p12.pst'
 
 vertical_well_pairs = [
     ('ST201', 'ST201_2'),
@@ -257,8 +257,24 @@ pvl_parameters = {
     'MFR11': [1.0, 1000, 9.00E+01, 'MFR'],
 }
 
+#-- SWBM Parameters
+swbm_parameters = {
+    'RDM_Grn':   [0.5, 2.0, 1.00, 'RDM'],
+    'RDM_Pas':   [0.5, 2.0, 1.00, 'RDM'],
+    'RDM_Nat':   [0.5, 2.0, 1.00, 'RDM'],
+    'IE_Flood':  [0.5, 0.8, 0.70, 'IrrEff'],
+    'IE_WL_Grn': [1.0, 1.2, 1.05, 'IrrEff'],
+    'IE_CP_Grn': [1.0, 1.2, 1.10, 'IrrEff'],
+    'IE_WL_Pas': [0.8, 1.0, 0.85, 'IrrEff'],
+    'IE_CP_Pas': [0.8, 1.0, 0.95, 'IrrEff'],
+    'KCM_Alf':   [0.9, 1.1, 1.00, 'KVM'],
+    'KCM_Grn':   [0.9, 1.1, 1.00, 'KVM'],
+    'KCM_Pas':   [0.9, 1.1, 1.00, 'KVM'],
+    'KCM_Nat':   [0.9, 1.1, 1.00, 'KVM'],
+}
+
 #-- Assemble
-pest_parameters = t2p_parameters | sfr_parameters | aem2texture_parameters | pvl_parameters
+pest_parameters = t2p_parameters | sfr_parameters | aem2texture_parameters | pvl_parameters | swbm_parameters
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Observations
@@ -468,7 +484,7 @@ obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weigh
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Switch to folder PEST setup is in
-os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/Setup/')
+os.chdir('C:/Projects/SVIHM/2025_PEST_t2pcalib/Setup_SWBM/')
 
 # Write INS files
 write_ts_ins_file(str_fj, origin_date, 2, 'Streamflow_FJ_SVIHM.ins', column_str='86:99')
@@ -488,12 +504,14 @@ write_hobs_ins_file(hobs_df, 'HobData_SVIHM.ins')
 pst = pyemu.Pst.from_io_files(tpl_files=['t2p_par2par.tpl',
                                          'sfr2par.tpl',
                                          'AEM2Texture.tpl',
-                                         'SVIHM_PVAL.tpl'
+                                         'SVIHM_PVAL.tpl',
+                                         'landcover_table.tpl'
                                          ],
                               in_files=[Path('./SVIHM/t2p_par2par.in'),
                                         Path('./SVIHM/sfr2par.in'),
                                         Path('./SVIHM/preproc/AEM2Texture.in'),
-                                        Path('./SVIHM/MODFLOW/SVIHM.pvl')
+                                        Path('./SVIHM/MODFLOW/SVIHM.pvl'),
+                                        Path('./SVIHM/SWBM/landcover_table.txt')
                                         ],
                               ins_files=['Streamflow_FJ_SVIHM.ins',
                                          'Streamflow_AS_SVIHM.ins',
@@ -576,6 +594,13 @@ pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"scale"]    = 1/100
 
+# And SWBM parameters
+for grp in ['RDM','IrrEff','KVM']:
+    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"parval1"] *= 100
+    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"parlbnd"] *= 100
+    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"parubnd"] *= 100
+    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"scale"]    = 1/100
+
 # Observation Check
 obs_df['obsnme'] = obs_df['obsnme'].str.lower()   # pyemu converts to lowercase
 detected_obs_names = set(pst.observation_data.index)
@@ -604,7 +629,7 @@ pst.prior_information.loc[pst.prior_information.obgnme=='regulPLP','weight'] *= 
 pst.prior_information.loc[pst.prior_information.obgnme=='regulmSFR','weight'] *= 0.25
 
 # Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/10/svihm_t2p10_iter4.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+calpar = pd.read_table(Path('../RunRecords/10/svihm_t2p10_init.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
 #calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
 print(t2p_par2par_frompar(calpar))
 pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
