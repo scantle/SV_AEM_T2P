@@ -42,7 +42,7 @@ yoff = 4571330
 origin_date = pd.to_datetime('1990-9-30')
 
 # Out
-pst_file = 'svihm_t2p12.pst'
+pst_file = 'svihm_t2p13.pst'
 
 vertical_well_pairs = [
     ('ST201', 'ST201_2'),
@@ -187,13 +187,13 @@ t2p_parameters = {
     'SsSC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
     'SsMC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
     'SsVC1_M'   : [0.1, 1.0, 0.45, 'Ss_M'],
-    'SySC1'     : [0.20, 0.40, 0.25, 'Sy'],
+    'SySC1'     : [0.15, 0.40, 0.249928, 'Sy'],
     'SyMF1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
     'SyFF1_M'   : [0.01, 1.0, 0.75, 'Sy_M'],
     'SyMC1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
     'SyVC1_M'   : [0.1, 1.5, 0.75, 'Sy_M'],
     'KHp1'      : [0.25, 1.0, 0.93, 'PLP'],
-    'KVp1'      : [-1.0, -0.15, -0.62, 'PLP'],
+    'KVp1'      : [-1.0, -0.15, -0.620591, 'PLP'],
 }
 
 # Replicates par2par setup
@@ -202,36 +202,36 @@ print(t2p_reality_check)
 
 # Add SFR2PAR segment multipliers
 sfr_parameters = {
-    'sbcm01': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm01': [0.6, 2.0, 1.0, 'mSFR'],
     'sbcm02': ['tied','sbcm01', 'mSFR'],
     'sbcm03': ['tied','sbcm01', 'mSFR'],
     'sbcm04': ['tied','sbcm01', 'mSFR'],
-    'sbcm05': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm06': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm05': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm06': [0.6, 2.0, 1.0, 'mSFR'],
     'sbcm07': ['tied','sbcm06', 'mSFR'],
     'sbcm08': ['tied','sbcm06', 'mSFR'],
-    'sbcm09': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm09': [0.6, 2.0, 1.0, 'mSFR'],
     'sbcm10': ['tied','sbcm09', 'mSFR'],
-    'sbcm11': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm12': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm13': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm14': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm15': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm11': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm12': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm13': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm14': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm15': [0.6, 2.0, 1.0, 'mSFR'],
     'sbcm16': ['tied','sbcm15', 'mSFR'],
-    'sbcm17': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm18': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm19': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm20': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm21': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm22': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm23': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm24': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm25': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm26': [0.1, 10, 1.0, 'mSFR'],
-    'sbcm27': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm17': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm18': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm19': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm20': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm21': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm22': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm23': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm24': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm25': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm26': [0.6, 2.0, 1.0, 'mSFR'],
+    'sbcm27': [0.6, 2.0, 1.0, 'mSFR'],
     'sbcm28': ['tied','sbcm27', 'mSFR'],
     'sbcm29': ['tied','sbcm27', 'mSFR'],
-    'sbcm30': [0.1, 10, 1.0, 'mSFR'],
+    'sbcm30': [0.6, 2.0, 1.0, 'mSFR'],
 }
 
 # Read in texture distribution parameters
@@ -263,9 +263,9 @@ swbm_parameters = {
     'RDM_Pas':   [0.5, 2.0, 1.00, 'RDM'],
     'RDM_Nat':   [0.5, 2.0, 1.00, 'RDM'],
     'IE_Flood':  [0.5, 0.8, 0.70, 'IrrEff'],
-    'IE_WL_Grn': [1.0, 1.2, 1.05, 'IrrEff'],
+    'IE_WL_Grn': [0.9, 1.2, 1.00, 'IrrEff'],
     'IE_CP_Grn': [1.0, 1.2, 1.10, 'IrrEff'],
-    'IE_WL_Pas': [0.8, 1.0, 0.85, 'IrrEff'],
+    'IE_WL_Pas': [0.8, 1.0, 0.90, 'IrrEff'],
     'IE_CP_Pas': [0.8, 1.0, 0.95, 'IrrEff'],
     'KCM_Alf':   [0.9, 1.1, 1.00, 'KVM'],
     'KCM_Grn':   [0.9, 1.1, 1.00, 'KVM'],
@@ -366,9 +366,9 @@ str_by['obsnme'] = [f"BY_{i + 1}" for i in str_by.index]
 str_by['obsval'] = str_by['Streamflow_m3/day']
 
 # log transform with a small offset to avoid 0
-str_fj['obsval'] = np.log(str_fj['obsval'] + 0.1)
-str_as['obsval'] = np.log(str_as['obsval'] + 0.1)
-str_by['obsval'] = np.log(str_by['obsval'] + 0.1)
+# str_fj['obsval'] = np.log(str_fj['obsval'] + 0.1)
+# str_as['obsval'] = np.log(str_as['obsval'] + 0.1)
+# str_by['obsval'] = np.log(str_by['obsval'] + 0.1)
 
 # Set some variables to reuse
 qts = [0.40, 0.80]
@@ -472,12 +472,13 @@ obs_df["metagroup"] = obs_df["obsgnme"].map(metagroup_mapping)
 target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
 obs_df.groupby('obsgnme').wt.sum()
 obs_df.groupby('metagroup').wt.sum()
+obs_df.loc[obs_df.obsgnme=='fj_low','wt'] *= 2.0  # a little extra on those low flows
 
 obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weight,
-                                                            'HEAD_DIFFS':target_weight/10,
+                                                            'HEAD_DIFFS':target_weight/5,
                                                             'VH_DIFFS':target_weight,
-                                                            'STREAMFLOW':target_weight/1.0e5,
-                                                           'STREAMVOL':target_weight/1.1e8})
+                                                            'STREAMFLOW':target_weight/1.25e4,
+                                                           'STREAMVOL':target_weight/1.0e7})
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup PEST
@@ -566,15 +567,6 @@ for param, value in pest_parameters.items():
         pst.parameter_data.loc[param.lower(), 'parlbnd'] = value[0]
         pst.parameter_data.loc[param.lower(), 'parubnd'] = value[1]
 
-# Adjust derinc for groups
-# pst.rectify_pgroups()
-# pst.parameter_groups.loc['K','derinc'] = 0.05
-# pst.parameter_groups.loc['K_M','derinc'] = 0.02
-# pst.parameter_groups.loc['Sy','derinc'] = 0.02
-# pst.parameter_groups.loc['PLP','derinc'] = 0.02
-pst.parameter_groups.loc['MFR','derinc'] = 0.02
-pst.parameter_groups.loc['mSFR','derinc'] = 0.02
-
 # Adjust scale, transformation of power-law parameters
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parval1"] *= 100       # parval now read in
 pst.parameter_data.loc[pst.parameter_data['pargp']=='PLP',"parlbnd"] *= 100
@@ -593,13 +585,6 @@ pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parval1"] *= 100  
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parlbnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"parubnd"] *= 100
 pst.parameter_data.loc[pst.parameter_data['parnme']=='sysc1',"scale"]    = 1/100
-
-# And SWBM parameters
-for grp in ['RDM','IrrEff','KVM']:
-    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"parval1"] *= 100
-    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"parlbnd"] *= 100
-    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"parubnd"] *= 100
-    pst.parameter_data.loc[pst.parameter_data['pargp']==grp,"scale"]    = 1/100
 
 # Observation Check
 obs_df['obsnme'] = obs_df['obsnme'].str.lower()   # pyemu converts to lowercase
@@ -620,16 +605,41 @@ obs_df = obs_df.set_index('obsnme')
 pst.observation_data.loc[obs_df.index, ["obsval", "weight", "obgnme"]] = obs_df[["obsval", "wt", "obsgnme"]].to_numpy()
 
 # Add regularization
-pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'Sy', 'PLP', 'mSFR', 'MFR'])  # fancy pyemu helper
-pst.prior_information['weight'] *= 1000
-#pst.prior_information.loc[pst.prior_information.index.str.startswith('mfr'),'weight'] *= 10
-pst.prior_information.loc[pst.prior_information.pilbl=='sysc1','weight'] *= 0.75
-pst.prior_information.loc[pst.prior_information.obgnme=='regulaemscal','weight'] *= 0.25
-pst.prior_information.loc[pst.prior_information.obgnme=='regulPLP','weight'] *= 0.25
-pst.prior_information.loc[pst.prior_information.obgnme=='regulmSFR','weight'] *= 0.25
+pyemu.helpers.zero_order_tikhonov(pst, parbounds=True, par_groups=['aemscale', 'Sy', 'PLP', 'mSFR', 'MFR', 'RDM', 'IrrEff', 'KVM'])  # fancy pyemu helper
+
+pst.prior_information['weight'] *= 250
+# pst.prior_information.loc[pst.prior_information.index.str.startswith('mfr'),'weight'] *= 500
+# pst.prior_information.loc[pst.prior_information.pilbl=='sysc1','weight'] *= 500
+pst.prior_information.loc[pst.prior_information.obgnme=='regulaemscal','weight'] *= 1/7
+pst.prior_information.loc[pst.prior_information.obgnme=='regulPLP','weight'] *= 1/7
+pst.prior_information.loc[pst.prior_information.obgnme=='regulmSFR','weight'] *= 2
+pst.prior_information.loc[pst.prior_information.obgnme=='regulRDM','weight'] *= 3
+pst.prior_information.loc[pst.prior_information.obgnme=='regulIrrEff','weight'] *= 3
+pst.prior_information.loc[pst.prior_information.obgnme=='regulKVM','weight'] *= 3
+
+# Coupled priors that hold Kc and IE together (preferred difference reg)
+pairs = [
+    ('kcm_grn', 'ie_cp_grn'),
+    ('kcm_pas', 'ie_cp_pas'),
+    ('kcm_alf', 'ie_cp_grn'),   # alfalfa uses same CP IE as grain
+    ('kcm_grn', 'ie_wl_grn'),
+    ('kcm_pas', 'ie_wl_pas'),
+]
+
+for kc_par, ie_par in pairs:
+    print(kc_par.removeprefix('kcm_'), ie_par.removeprefix('ie_'))
+    kc_def = pst.parameter_data.loc[kc_par, 'parval1']
+    ie_def = pst.parameter_data.loc[ie_par, 'parval1']
+    rhs = np.log(kc_def / ie_def)          # natural log
+    pst.add_pi_equation(par_names=[kc_par, ie_par],
+                        coef_dict={kc_par: 1.0, ie_par: -1.0},
+                        rhs=rhs,
+                        weight=500.0,
+                        pilbl=f'rET_{kc_par.removeprefix("kcm_")}{ie_par.removeprefix("ie")}',
+                        obs_group='regulET')
 
 # Update starting values from parfile
-calpar = pd.read_table(Path('../RunRecords/10/svihm_t2p10_init.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
+calpar = pd.read_table(Path('../RunRecords/12/svihm_t2p12_iter5.par'), sep="\\s+", skiprows=1, index_col=0, names=['par','parval1','scale','offset'])
 #calpar['parval1'] = calpar['parval1'] * calpar['scale'] + calpar['offset']
 print(t2p_par2par_frompar(calpar))
 pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
@@ -640,8 +650,26 @@ pst.parameter_data.loc[calpar.index, "parval1"] = calpar['parval1']
 # pst.parameter_data.loc[pst.parameter_data.pargp=='mSFR','parval1'] = 1.0
 # for key in aem2texture_parameters.keys():
 #     pst.parameter_data.loc[pst.parameter_data.index == key.lower(), 'parval1'] = aem2texture_parameters[key][2]
+# pst.parameter_data.loc['kminff1','parval1']   =  0.1
+# pst.parameter_data.loc['kminmf1_m','parval1'] = 10.0
+# pst.parameter_data.loc['kminsc1_m','parval1'] = 10.0
+# pst.parameter_data.loc['kminmc1_m','parval1'] =  5.0
+# pst.parameter_data.loc['kminvc1_m','parval1'] =  2.0
+# t2p_par2par_frompar(pst.parameter_data)
 
 pst.model_command = [str(Path("forward_run.bat"))]
+
+# Adjust derinc for groups
+# pst.rectify_pgroups()
+# pst.parameter_groups.loc['K','derinc'] = 0.05
+# pst.parameter_groups.loc['K_M','derinc'] = 0.02
+pst.parameter_groups.loc['Sy','derinc'] = 0.01
+#pst.parameter_groups.loc['PLP','derinc'] = 0.001
+pst.parameter_groups.loc['MFR','derinc'] = 0.001
+pst.parameter_groups.loc['RDM','derinc'] = 0.001
+pst.parameter_groups.loc['mSFR','derinclb'] = 0.001
+pst.parameter_groups.loc['IrrEff','derinc'] = 0.015
+pst.parameter_groups.loc['KVM','derinc']    = 0.015
 
 # Set some final options, save the PST file
 pst.control_data.noptmax = 0
@@ -651,8 +679,9 @@ pst.control_data.numcom = 1
 pst.control_data.jacfile = np.int32(0)
 pst.control_data.messfile = np.int32(0)
 pst.control_data.numlam = 10
-pst.reg_data.phimlim = pst.nnz_obs - pst.npar_adj    # comment out to check out best fit
-pst.reg_data.phimaccept = 1.1 * pst.reg_data.phimlim # same
+# Stop as soon as data-fit can't improve by >5 % without regularisation blow-up
+pst.reg_data.phimlim = 0.95 * (pst.nnz_obs - pst.npar_adj)
+pst.reg_data.phimaccept = pst.reg_data.phimlim * 1.05
 #pst.reg_data.fracphim
 pst.reg_data.wfinit = 1.0
 pst.reg_data.wffac = 1.3
