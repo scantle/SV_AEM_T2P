@@ -21,7 +21,7 @@ from T2P_funcs import t2p_par2par, t2p_par2par_frompar
 # Directories
 orig_dir = os.getcwd()
 data_dir = Path('./01_Data/')
-model_dir = Path('./02_Models/SVIHM_MF/')
+model_dir = Path('./02_Models/SVIHM_MF/MODFLOW/')
 out_dir = Path('./05_Outputs/PEST/')
 svihm_dir = Path('../SVIHM/')  # External to project, local SVIHM Git repo
 svihm_ref_dir = svihm_dir / 'SVIHM_Input_Files/reference_data_for_plots/'
@@ -472,13 +472,14 @@ obs_df["metagroup"] = obs_df["obsgnme"].map(metagroup_mapping)
 target_weight = obs_df.loc[obs_df['metagroup']=='HEADS','wt'].sum()
 obs_df.groupby('obsgnme').wt.sum()
 obs_df.groupby('metagroup').wt.sum()
-obs_df.loc[obs_df.obsgnme=='fj_low','wt'] *= 2.0  # a little extra on those low flows
 
 obs_df = balance_metagroup_weights(obs_df,  target_weights={'HEADS':target_weight,
                                                             'HEAD_DIFFS':target_weight/5,
                                                             'VH_DIFFS':target_weight,
                                                             'STREAMFLOW':target_weight/1.25e4,
                                                            'STREAMVOL':target_weight/1.0e7})
+
+obs_df.loc[obs_df.obsgnme=='fj_low','wt'] *= 2.0  # a little extra on those low flows
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Setup PEST
@@ -613,9 +614,9 @@ pst.prior_information['weight'] *= 250
 pst.prior_information.loc[pst.prior_information.obgnme=='regulaemscal','weight'] *= 1/7
 pst.prior_information.loc[pst.prior_information.obgnme=='regulPLP','weight'] *= 1/7
 pst.prior_information.loc[pst.prior_information.obgnme=='regulmSFR','weight'] *= 2
-pst.prior_information.loc[pst.prior_information.obgnme=='regulRDM','weight'] *= 3
-pst.prior_information.loc[pst.prior_information.obgnme=='regulIrrEff','weight'] *= 3
-pst.prior_information.loc[pst.prior_information.obgnme=='regulKVM','weight'] *= 3
+pst.prior_information.loc[pst.prior_information.obgnme=='regulRDM','weight'] *= 4
+pst.prior_information.loc[pst.prior_information.obgnme=='regulIrrEff','weight'] *= 4
+pst.prior_information.loc[pst.prior_information.obgnme=='regulKVM','weight'] *= 4
 
 # Coupled priors that hold Kc and IE together (preferred difference reg)
 pairs = [
@@ -634,7 +635,7 @@ for kc_par, ie_par in pairs:
     pst.add_pi_equation(par_names=[kc_par, ie_par],
                         coef_dict={kc_par: 1.0, ie_par: -1.0},
                         rhs=rhs,
-                        weight=500.0,
+                        weight=750.0,
                         pilbl=f'rET_{kc_par.removeprefix("kcm_")}{ie_par.removeprefix("ie")}',
                         obs_group='regulET')
 
@@ -668,8 +669,10 @@ pst.parameter_groups.loc['Sy','derinc'] = 0.01
 pst.parameter_groups.loc['MFR','derinc'] = 0.001
 pst.parameter_groups.loc['RDM','derinc'] = 0.001
 pst.parameter_groups.loc['mSFR','derinclb'] = 0.001
-pst.parameter_groups.loc['IrrEff','derinc'] = 0.015
-pst.parameter_groups.loc['KVM','derinc']    = 0.015
+pst.parameter_groups.loc['IrrEff','derinc'] = 0.01
+pst.parameter_groups.loc['KVM','derinc']    = 0.01
+pst.parameter_groups.loc['IrrEff', 'relparmax'] = 0.003
+pst.parameter_groups.loc['KVM',    'relparmax'] = 0.003
 
 # Set some final options, save the PST file
 pst.control_data.noptmax = 0

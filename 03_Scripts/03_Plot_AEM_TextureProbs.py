@@ -46,7 +46,7 @@ sv_model_domain_file = shp_dir / 'Model_Domain_20180222.shp'
 use_mf_top_bot = True
 
 # Models
-base_dir = mod_dir / 'SVIHM_MF'
+base_dir = mod_dir / 'SVIHM_MF' / 'MODFLOW'
 
 cc = ['#df263e', '#e37e26', '#e3c128', '#6da14d', '#5289db']
 
@@ -148,12 +148,12 @@ lmap.set_axis_off()
 prob_cmaps = [LinearSegmentedColormap.from_list(f'cmap_{c}', [(1,1,1), to_rgb(c)]) for c in cc]
 
 # lne = 100701
-# df = aem_long[aem_long.SUBLINE_NO == lne]
+# fj_sub = aem_long[aem_long.SUBLINE_NO == lne]
 
 #-- Loop over lines plotting
 for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
 
-    #ylim = (df.BOT_ELEV.min(), df.ELEVATION.max())
+    #ylim = (fj_sub.BOT_ELEV.min(), fj_sub.ELEVATION.max())
     if use_mf_top_bot:
         ylim = (df.bot2.min(), df.ELEVATION.max())
     else:
@@ -178,15 +178,15 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                                   doi_alpha=1.0,
                                   hide_xticks=True)
     cb_list.append(cb)
-    #plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
+    #plot_doi(axd['p1'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
     plot_line_by_depth(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
-    # plot_wl(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'aemwlidw', 'ELEVATION', fmt='r--')
-    #plot_wl(axd['p1'], df, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
-    #plot_wl(axd['p1'], df, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
+    # plot_wl(axd['p1'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'aemwlidw', 'ELEVATION', fmt='r--')
+    #plot_wl(axd['p1'], fj_sub, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
+    #plot_wl(axd['p1'], fj_sub, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
 
     #-- Loop over Textures
     for i, tex in enumerate(tex_classes):
-        # ln, cb = plot_slice_rect(fig, axd[f'p{i+2}'], rect=df.AEMRect, values=df[tex], cmap=prob_cmaps[i],
+        # ln, cb = plot_slice_rect(fig, axd[f'p{i+2}'], rect=fj_sub.AEMRect, values=fj_sub[tex], cmap=prob_cmaps[i],
         #                 xlim=(line_min, line_max),
         #                 ylim=ylim,
         #                 ylabel='Elevation (m)',
@@ -198,10 +198,10 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                         doi_alpha=1.0,
                         colorbar_label=f'{tex} Prob.', hide_xticks=True, clim=(0,1))
         cb_list.append(cb)
-        #plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
+        #plot_line_by_depth(axd[f'p{i+2}'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
         plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
-        #plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
-        #plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
+        #plot_wl(axd[f'p{i+2}'], fj_sub, 'LINE_DIST', 'bot1', None, fmt='k--', width_col='LINE_WIDTH', center=True)
+        #plot_wl(axd[f'p{i+2}'], fj_sub, 'LINE_DIST', 'bot2', None, fmt='k--', width_col='LINE_WIDTH', center=True)
 
     #-- Show line on map
     aem_line_shp[aem_line_shp['SUBLINE_NO']==lne].plot(color='black', ax=axd['map'])

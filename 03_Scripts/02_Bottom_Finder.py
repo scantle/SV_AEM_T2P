@@ -164,7 +164,7 @@ bottoms = {'SUBLINE_NO': [], 'FID': [], 'BOT_EST_POINT': []}
 
 # lne = 100201
 # lne_df = aem_long[aem_long.SUBLINE_NO == lne]
-# df = lne_df[lne_df.FID == int(lne_df.FID.mean())]
+# fj_sub = lne_df[lne_df.FID == int(lne_df.FID.mean())]
 
 for (lne, lne_df) in aem_long.groupby('SUBLINE_NO'):
     print(lne)
@@ -176,7 +176,7 @@ for (lne, lne_df) in aem_long.groupby('SUBLINE_NO'):
     # Loop over points getting initial estimates
     for idx, df in lne_df.groupby('FID'):
 
-        #eoi = df['ELEVATION'].iloc[0] - df['DOI_CONSERVATIVE'].iloc[0]  # min elev of investigation
+        #eoi = fj_sub['ELEVATION'].iloc[0] - fj_sub['DOI_CONSERVATIVE'].iloc[0]  # min elev of investigation
         doi_pid = get_pid_by_elev(df, df['ELEVATION'].iloc[0] - df['DOI_CONSERVATIVE'].iloc[0])
 
         # Get bottom start
@@ -277,7 +277,7 @@ lmap.set_axis_off()
 prob_cmaps = ['Blues', 'Greens', 'Oranges', 'Purples', 'Reds']
 
 # lne = 100701
-# df = aem_long[aem_long.SUBLINE_NO == lne]
+# fj_sub = aem_long[aem_long.SUBLINE_NO == lne]
 
 # Last minute rename of Tex Classes
 tex_classes_use = ['Fine-grained', 'Mixed Fine', 'Sand', 'Mixed Coarse', 'Very Coarse']
@@ -285,7 +285,7 @@ tex_classes_use = ['Fine-grained', 'Mixed Fine', 'Sand', 'Mixed Coarse', 'Very C
 #-- Loop over lines plotting
 for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
     botdf = bottoms_df[bottoms_df['SUBLINE_NO']==lne]
-    #ylim = (df.BOT_ELEV.min(), df.ELEVATION.max())
+    #ylim = (fj_sub.BOT_ELEV.min(), fj_sub.ELEVATION.max())
     if use_mf_top_bot:
         ylim = (df.bot2.min(), df.ELEVATION.max())
     else:
@@ -309,12 +309,12 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                     ylabel='Elevation (m)',
                     colorbar_label='Resistivity (ohm-m)', hide_xticks=True)
     cb_list.append(cb)
-    #plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
+    #plot_doi(axd['p1'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
     plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
     plot_wl(axd['p1'], botdf, 'LINE_DIST', 'BOT_EST_POINT', None, fmt='r:', width_col='LINE_WIDTH', center=True)
     plot_wl(axd['p1'], botdf, 'LINE_DIST', 'BOT_EST_LNE', None, fmt='r--', width_col='LINE_WIDTH', center=True)
-    # plot_wl(axd['p1'], df, 'LINE_DIST', 'bot_cf', None, fmt='m--', width_col='LINE_WIDTH', center=True)
-    # plot_wl(axd['p1'], df, 'LINE_DIST', 'bot1', None, fmt='g--', width_col='LINE_WIDTH', center=True)
+    # plot_wl(axd['p1'], fj_sub, 'LINE_DIST', 'bot_cf', None, fmt='m--', width_col='LINE_WIDTH', center=True)
+    # plot_wl(axd['p1'], fj_sub, 'LINE_DIST', 'bot1', None, fmt='g--', width_col='LINE_WIDTH', center=True)
     plot_wl(axd['p1'], df, 'LINE_DIST', 'bot2', None, fmt='g--', width_col='LINE_WIDTH', center=True)
 
     #-- Loop over Textures
@@ -325,12 +325,12 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                         ylabel='Elevation (m)',
                         colorbar_label=f'{tex_classes_use[i]} Prob.', hide_xticks=True, clim=(0,1))
         cb_list.append(cb)
-        #plot_doi(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
+        #plot_doi(axd[f'p{i+2}'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
         plot_doi(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
         plot_wl(axd[f'p{i+2}'], botdf, 'LINE_DIST', 'BOT_EST_POINT', None, fmt='r:', width_col='LINE_WIDTH', center=True)
         plot_wl(axd[f'p{i+2}'], botdf, 'LINE_DIST', 'BOT_EST_LNE', None, fmt='r--', width_col='LINE_WIDTH', center=True)
-        # plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot_cf', None, fmt='m--', width_col='LINE_WIDTH', center=True)
-        # plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot1', None, fmt='g--', width_col='LINE_WIDTH', center=True)
+        # plot_wl(axd[f'p{i+2}'], fj_sub, 'LINE_DIST', 'bot_cf', None, fmt='m--', width_col='LINE_WIDTH', center=True)
+        # plot_wl(axd[f'p{i+2}'], fj_sub, 'LINE_DIST', 'bot1', None, fmt='g--', width_col='LINE_WIDTH', center=True)
         plot_wl(axd[f'p{i+2}'], df, 'LINE_DIST', 'bot2', None, fmt='g--', width_col='LINE_WIDTH', center=True)
 
     #-- Show line on map

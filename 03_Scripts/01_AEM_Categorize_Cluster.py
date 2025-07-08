@@ -63,6 +63,7 @@ def jensen_shannon_divergence(p, q):
     m = 0.5 * (p + q)
     return 0.5 * (entropy(p, m, base=2) + entropy(q, m, base=2))
 
+# -------------------------------------------------------------------------------------------------------------------- #
 
 class AEMCell(object):
     """ From Knight et al. (2018) Eq (2) """
@@ -347,12 +348,23 @@ sns.violinplot(x='cluster', y='rho', data=data_for_viz)
 plt.title('Violin Plot of rho by Cluster')
 plt.savefig(plt_dir / '01_violin_plot_rho_by_cluster.png', dpi=300, bbox_inches='tight')
 
-fig, axs = plt.subplots(nrows=len(columns_to_use), figsize=(8.5, 11))
+# global settings
+sns.set_context("paper")
+sns.set_style("whitegrid")       # y-axis gridlines
+sns.despine(left=True)           # optional: remove left spine
+palettes = {
+    columns_to_use[0]: "Set2",      # 6 categories
+    columns_to_use[1]: "Set1",      # 2 categories
+    columns_to_use[2]: "Dark2"      # 7 categories
+}
+
+fig, axs = plt.subplots(nrows=len(columns_to_use), figsize=(8.5, 11), constrained_layout=True)
 
 for i, col in enumerate(columns_to_use[0:-1]):  # Skip 'rho'
-    sns.countplot(x='cluster', hue=col, data=data_for_viz, ax=axs[i])
-    axs[i].set_title(f'Counts of {col.replace("_"," ")} by Meta Cluster')
-    axs[i].legend(title='Legend', bbox_to_anchor=(1.05, 1), loc='upper left')
+    sns.countplot(x='cluster', hue=col, data=data_for_viz, ax=axs[i], palette=palettes[col])
+    axs[i].set_title(f'Counts of {col.replace("_"," ")} by Meta Cluster', fontfamily='Bahnschrift', fontsize=12)
+    axs[i].legend(bbox_to_anchor=(1.05, 1), loc='upper left', frameon=False)
+    axs[i].set_ylabel("Frequency")
 
 # Add the rho violin plots
 axs[3] = sns.violinplot(x='cluster', y='rho', data=data_for_viz, palette=cc, hue='cluster', legend=False)
@@ -360,7 +372,7 @@ axs[3] = sns.violinplot(x='cluster', y='rho', data=data_for_viz, palette=cc, hue
 #axs[3].set_ylim(0, 4)
 #axs[3].yaxis.set_major_formatter(FuncFormatter(format_log_tick))
 axs[3].set_ylabel(r'Resistivity, $\rho\, [\Omega\cdot\mathrm{m}]$')
-plt.title('Violin Plot of Electrical Resistivity by Meta Cluster')
+plt.title('Violin Plot of Electrical Resistivity by Meta Cluster', fontfamily='Bahnschrift', fontsize=12)
 
 plt.tight_layout()
 plt.savefig(plt_dir / '01_count_plots_by_cluster.png', dpi=300, bbox_inches='tight')
@@ -527,7 +539,7 @@ for tex in rho_dict.keys():
         shape, loc, scale = fit_lognormal_with_constraints(rho_dict[tex])
     x = np.linspace(0, 500, 1000)
     y = lognorm.pdf(x, s=shape, loc=loc, scale=scale)
-    plt.plot(x, y, zorder=2, color=cc[tex])
+    plt.plot(x, y, zorder=2, color=cc[tex], lw=2)
     fit_dists[tex] = (shape, loc, scale)
     print(tex, shape, loc, scale)
 hax.set_xscale('log')
@@ -538,7 +550,7 @@ hax.set_xlim(10,400)
 
 hax.set_xlabel(r'Resistivity (log scale), $\rho\, [\Omega\cdot\mathrm{m}]$', fontsize=15)
 hax.set_ylabel('Density', fontsize=15)
-hax.legend(fontsize=13, title='Texture Clusters', title_fontsize=15)
+leg = hax.legend(fontsize=13, title='Texture Clusters', title_fontsize=15)
 hplt.tight_layout()
 plt.savefig(plt_dir / '01_histogram_resistivity_clusters.png', dpi=300, bbox_inches='tight')
 # -------------------------------------------------------------------------------------------------------------------- #

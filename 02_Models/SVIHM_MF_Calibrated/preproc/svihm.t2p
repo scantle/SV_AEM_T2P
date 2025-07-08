@@ -1,0 +1,67 @@
+*==============================================================================
+* Texture2Par Main Input File
+*==============================================================================
+ 
+BEGIN OPTIONS
+  # Required Options
+  MAX_VSTRUCT    1
+  USE_MODEL_GSE
+  READ_GRID_WEIGHTS
+  MAX_OUTSIDE_DIST 500
+END OPTIONS
+ 
+BEGIN FLOW_MODEL
+  TYPE MODFLOW
+  NAM_FILE      ../MODFLOW/SVIHM_t2p.nam
+  TEMPLATE_FILE SVIHM_TEMPLATE.upw
+  XOFFSET       499977.0
+  YOFFSET       4571330.0
+  ROTATION      0.0
+END FLOW_MODEL
+ 
+BEGIN CLASSES
+  Fine
+  Mixed_Fine
+  Sand
+  Mixed_Coarse
+  Very_Coarse
+END CLASSES
+ 
+BEGIN DATASET
+  FILE     logs_and_AEM_5classes.dat
+END DATASET
+ 
+BEGIN VARIOGRAMS
+  # Structure Vtype  Nugget  Sill  Range_min Range_max ang1  nnear
+  CLASS Fine
+           1    Exp    0.019   0.057    2.88E+03       2.88E+03  0.0    64
+  CLASS Mixed_Fine
+           1    Exp    0.036   0.047    9.99E+02       9.99E+02  0.0    64
+  CLASS Sand
+           1    Exp    0.024   0.020    5.32E+02       5.32E+02  0.0    64
+  CLASS Mixed_Coarse
+           1    Exp    0.039   0.060    6.32E+02       6.32E+02  0.0    64
+  CLASS Very_Coarse
+           1    Exp    0.028   0.091    9.39E+02       9.39E+02  0.0    64
+  CLASS PilotPoints
+           1    Sph    0.00   1.0      1.0E5     1.0E5  0.0  25
+END VARIOGRAMS
+ 
+BEGIN PP_LOCS
+# ID          X           Y Zone
+  1    511983.0   4599271.0    1
+END PP_LOCS
+ 
+BEGIN PP_PARAMETERS
+  TYPE Global
+# ID   KHp    KVp   STp
+    1    .93530100000  -.6205910000   1.0
+  TYPE Aquifer
+# ID    Class             Kmin             Kmax              Ss              Sy           Aniso     Kd
+   1   Fine            2.4076200E-01      2.4076200E-01     2.2448680E-04     2.3609503E-02     1.1041294E+01  0.007
+   1   Mixed_Fine      6.4030172E+00      6.4030172E+00     1.7091347E-04     2.9929128E-02     9.7487125E+00  0.007
+   1   Sand            3.3778029E+01      3.3778029E+01     9.7554676E-05     2.4992800E-01     8.9663946E+00  0.007
+   1   Mixed_Coarse    3.3778029E+01      3.3778029E+01     4.4976803E-05     2.0001688E-01     8.2400355E+00  0.007
+   1   Very_Coarse     3.3778029E+01      3.3778029E+01     2.0585658E-05     3.8621059E-02     3.2785200E+00  0.007
+END PP_PARAMETERS
+ 

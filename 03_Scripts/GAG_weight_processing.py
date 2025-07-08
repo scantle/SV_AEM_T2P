@@ -94,16 +94,17 @@ def plot_flow_distributions(stream_df, stream_name, quantiles=[0.30, 0.70], log_
 
 #----------------------------------------------------------------------------------------------------------------------#
 
-def cv_stream_weights(stream_df, quantiles, cv_values, prefix):
+def cv_stream_weights(stream_df, quantiles, cv_values, prefix, obscol='obsval'):
     """
     Computes streamflow observation weights based on given quantiles and coefficients of variation (CV),
     and assigns flow categories for PEST parameter grouping.
 
     Parameters:
-        stream_df (pd.DataFrame): DataFrame containing streamflow observations in a column named 'obsval'.
+        stream_df (pd.DataFrame): DataFrame containing streamflow observations.
         quantiles (list of float): List of quantile values (e.g., [0.4, 0.8]) that define flow categories.
         cv_values (list of float): List of CV values corresponding to each flow category. Must have one more element than quantiles.
         prefix (str): Prefix for flow categories (e.g., 'fj' for Fort Jones stream).
+        obscol (str): Name of stream_df column containing flows
 
     Returns:
         tuple: (Array of computed group names, Array of computed weights).
@@ -112,23 +113,23 @@ def cv_stream_weights(stream_df, quantiles, cv_values, prefix):
         raise ValueError("cv_values must have one more element than quantiles.")
 
     # Compute flow thresholds
-    thresholds = stream_df['obsval'].quantile(quantiles).values
+    thresholds = stream_df[obscol].quantile(quantiles).values
 
     # Assign categories based on thresholds
     stream_df = stream_df.copy()
     stream_df['group'] = f"{prefix}_high"  # Default to high flow
 
     if len(quantiles) == 1:
-        stream_df.loc[stream_df['obsval'] <= thresholds[0], 'group'] = f"{prefix}_low"
+        stream_df.loc[stream_df[obscol] <= thresholds[0], 'group'] = f"{prefix}_low"
     elif len(quantiles) == 2:
-        stream_df.loc[stream_df['obsval'] <= thresholds[1], 'group'] = f"{prefix}_med"
-        stream_df.loc[stream_df['obsval'] <= thresholds[0], 'group'] = f"{prefix}_low"
+        stream_df.loc[stream_df[obscol] <= thresholds[1], 'group'] = f"{prefix}_med"
+        stream_df.loc[stream_df[obscol] <= thresholds[0], 'group'] = f"{prefix}_low"
     else:
         raise NotImplementedError("cv_stream_weights only can handle 3 groups for now")
 
     # Assign weights using Tolley et al. (2019)'s equation: 1 / ([obsval] * CV)²
     weight_map = {f"{prefix}_low": cv_values[0], f"{prefix}_med": cv_values[1], f"{prefix}_high": cv_values[2]}
-    stream_df['weight'] = 1 / ((stream_df['obsval'] * stream_df['group'].map(weight_map)) ** 2)
+    stream_df['weight'] = 1 / ((stream_df[obscol] * stream_df['group'].map(weight_map)) ** 2)
 
     return stream_df['group'].values, stream_df['weight'].values
 

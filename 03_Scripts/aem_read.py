@@ -18,7 +18,7 @@ def get_data_columns(filename, line, delim_whitespace=False):
 
 def line_dist(df, x_col, y_col):
     dist = np.sqrt((df[x_col] - df[x_col].iloc[0]) ** 2 + (df[y_col] - df[y_col].iloc[0]) ** 2) / 1000
-    #dist *= np.sign(df[x_col] - df[x_col].iloc[0])  # Correct for direction
+    #dist *= np.sign(fj_sub[x_col] - fj_sub[x_col].iloc[0])  # Correct for direction
     return dist
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -52,7 +52,7 @@ def read_xyz(filepath, skiprows=0, x_col='East_M', y_col='North_M', line_col='LI
                      names=header,
                      na_values=9999)
     # Sort
-    #df = df.sort_values(by=[line_col, x_col, y_col], axis=0)
+    #fj_sub = fj_sub.sort_values(by=[line_col, x_col, y_col], axis=0)
 
     # Calculate line distances/widths
     df = df.groupby(line_col, group_keys=False).apply(calc_line_geometry, x_col, y_col)
@@ -70,7 +70,7 @@ def aem_wide2long(df, id_col_prefixes, dist_col='LINE_DIST', line_col='Line'):
     id_dict['ids'] = [col for col in df.columns if col not in id_dict['val_all']]
     # Longify
     ldf = None
-    # Sort val columns by number of values - want most "points" first. Otherwise breaks df concatenation
+    # Sort val columns by number of values - want most "points" first. Otherwise breaks fj_sub concatenation
     col_order = np.flip(np.argsort([len(id_dict[key]) for key in id_col_prefixes]))
     id_col_prefixes = [id_col_prefixes[i] for i in col_order]
     for c in id_col_prefixes:

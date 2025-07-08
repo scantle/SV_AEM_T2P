@@ -16,11 +16,11 @@ import t2py
 # -------------------------------------------------------------------------------------------------------------------- #
 
 # Files
-mod_dir = Path('./02_Models/SVIHM_MF/')
+mod_dir = Path('./02_Models/SVIHM_MF/MODFLOW/')
 t2p_dir = Path('./02_Models/Texture2Par_onlytexture_2D/')
 t2p_inf = t2p_dir / 'svihm.t2p'
 t2p_log = t2p_dir / 'logs_and_AEM_5classes.dat'
-t2p_path = Path('./02_Models/Bin/Texture2Par.exe')
+t2p_path = Path('./00_Tools/T2P_Beta2/bin/Texture2Par.exe')
 run_dir = Path('./02_Models/CV_runs/')
 run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -177,7 +177,7 @@ for n in N_LIST:
         nnear_dir.mkdir(parents=True, exist_ok=True)
 
         # Setup dataset
-        folddf = basecase.df.copy()
+        folddf = basecase.fj_sub.copy()
         loc_ids = [idx for idx, tag in enumerate(fold_tag) if tag != f]
         folddf = folddf[folddf.ID.isin(loc_ids)]
         foldcase = t2py.Dataset(classes)

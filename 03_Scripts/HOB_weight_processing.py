@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Directories
 data_dir = Path('./01_Data/')
-model_dir = Path('./02_Models/SVIHM_MF/')
+model_dir = Path('./02_Models/SVIHM_MF/MODFLOW/')
 out_dir = Path('./04_Plots/Weights/')
 out_dir.mkdir(exist_ok=True)
 

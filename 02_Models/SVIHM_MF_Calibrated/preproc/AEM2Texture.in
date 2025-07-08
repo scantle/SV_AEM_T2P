@@ -1,0 +1,10 @@
+nclasses 5                                         # Number of texture classes
+rho_log_file  AEMLog_noUnsat.dat                   # Reading this
+tex_out_file  logs_and_AEM_5classes.dat            # Writing this
+prv_log_file  LithoLog_5classes_nocoloc.dat        # Will copy this over first (NONE if not needed)
+        Texture       Shape    Location       Scale
+Fine               0.284487    0.000000          3.2376500E+01
+Mixed_Fine         0.129485    0.000000          7.3254400E+01
+Sand               0.082697    0.000000          1.1551200E+02
+Mixed_Coarse       0.100896    0.000000          1.4932400E+02
+Very_Coarse        0.695543  190.029113          1.1588800E+02
