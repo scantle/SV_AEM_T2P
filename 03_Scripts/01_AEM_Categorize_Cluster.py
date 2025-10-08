@@ -367,9 +367,9 @@ for i, col in enumerate(columns_to_use[0:-1]):  # Skip 'rho'
     axs[i].set_ylabel("Frequency")
 
 # Add the rho violin plots
-axs[3] = sns.violinplot(x='cluster', y='rho', data=data_for_viz, palette=cc, hue='cluster', legend=False)
-#axs[3].set_yscale('log')
-#axs[3].set_ylim(0, 4)
+axs[3] = sns.violinplot(x='cluster', y='rho', cut=0, bw_adjust=0.9, data=data_for_viz, palette=cc, hue='cluster', legend=False)
+axs[3].set_yscale('linear')
+#axs[3].set_ylim(0, 600)
 #axs[3].yaxis.set_major_formatter(FuncFormatter(format_log_tick))
 axs[3].set_ylabel(r'Resistivity, $\rho\, [\Omega\cdot\mathrm{m}]$')
 plt.title('Violin Plot of Electrical Resistivity by Meta Cluster', fontfamily='Bahnschrift', fontsize=12)
