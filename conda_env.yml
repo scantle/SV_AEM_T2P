@@ -16,7 +16,7 @@ dependencies:
   - pathlib
   - tqdm
   - pykrige
-  - scipy
+  - scipy=1.15.1
   - scikit-learn
   - statsmodels >= 0.14
   - pyshp

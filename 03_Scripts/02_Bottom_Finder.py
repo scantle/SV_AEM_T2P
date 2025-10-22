@@ -15,7 +15,7 @@ os.chdir("./03_Scripts/")
 
 import sys
 sys.path.append('./')
-from aem_plot.utils import df2rectangles, plot_slice_rect, plot_doi, plot_wl
+from aem_plot.utils import df2rectangles, plot_slice_rect, plot_line_by_depth, plot_wl
 from aem_read import read_xyz, aem_wide2long, calc_line_geometry
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -310,7 +310,7 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                     colorbar_label='Resistivity (ohm-m)', hide_xticks=True)
     cb_list.append(cb)
     #plot_doi(axd['p1'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
-    plot_doi(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
+    plot_line_by_depth(axd['p1'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
     plot_wl(axd['p1'], botdf, 'LINE_DIST', 'BOT_EST_POINT', None, fmt='r:', width_col='LINE_WIDTH', center=True)
     plot_wl(axd['p1'], botdf, 'LINE_DIST', 'BOT_EST_LNE', None, fmt='r--', width_col='LINE_WIDTH', center=True)
     # plot_wl(axd['p1'], fj_sub, 'LINE_DIST', 'bot_cf', None, fmt='m--', width_col='LINE_WIDTH', center=True)
@@ -326,7 +326,7 @@ for lne, df in tqdm(aem_long.groupby('SUBLINE_NO'), desc='Plotting Line: '):
                         colorbar_label=f'{tex_classes_use[i]} Prob.', hide_xticks=True, clim=(0,1))
         cb_list.append(cb)
         #plot_doi(axd[f'p{i+2}'], fj_sub.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_STANDARD', 'ELEVATION', fmt='k--')
-        plot_doi(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
+        plot_line_by_depth(axd[f'p{i+2}'], df.dropna(subset='RHO_I'), 'LINE_DIST', 'DOI_CONSERVATIVE', 'ELEVATION', fmt='k:')
         plot_wl(axd[f'p{i+2}'], botdf, 'LINE_DIST', 'BOT_EST_POINT', None, fmt='r:', width_col='LINE_WIDTH', center=True)
         plot_wl(axd[f'p{i+2}'], botdf, 'LINE_DIST', 'BOT_EST_LNE', None, fmt='r--', width_col='LINE_WIDTH', center=True)
         # plot_wl(axd[f'p{i+2}'], fj_sub, 'LINE_DIST', 'bot_cf', None, fmt='m--', width_col='LINE_WIDTH', center=True)

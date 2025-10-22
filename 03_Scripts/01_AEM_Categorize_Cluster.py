@@ -39,7 +39,7 @@ plt.ion()
 # Directories
 data_dir = Path('../01_Data/')
 shp_dir = data_dir / 'shapefiles'
-out_dir = Path('../05_Outputs')
+out_dir = Path('../05_Outputs/')
 plt_dir = Path('../04_Plots/')
 
 # Files

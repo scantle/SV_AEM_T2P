@@ -14,7 +14,7 @@ from pathlib import Path
 data_dir = Path('01_Data/')
 shp_dir = data_dir / 'shapefiles'
 out_dir = Path('05_Outputs')
-tex_file_dir = Path('02_Models/Texture2Par_onlytexture_2D_nnear300/')
+tex_file_dir = Path('02_Models/Texture2Par_onlytexture_2D/')
 
 # Texture files
 tex_files = {
@@ -29,10 +29,10 @@ tex_files = {
 sv_model_shp_file = shp_dir / 'grid_properties_rep.shp'
 
 # Outputs
-grid_layer1_shapefile   = shp_dir / "texture_model_nnear300_layer1.shp"
-grid_layer2_shapefile   = shp_dir / "texture_model_nnear300_layer2.shp"
-points_layer1_shapefile = shp_dir / "texture_model_nnear300_totals_layer1.shp"
-points_layer2_shapefile = shp_dir / "texture_model_nnear300_totals_layer2.shp"
+grid_layer1_shapefile   = shp_dir / "texture_model_layer1.shp"
+grid_layer2_shapefile   = shp_dir / "texture_model_layer2.shp"
+points_layer1_shapefile = shp_dir / "texture_model_totals_layer1.shp"
+points_layer2_shapefile = shp_dir / "texture_model_totals_layer2.shp"
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Classes/Functions

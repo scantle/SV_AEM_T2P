@@ -11,10 +11,4 @@ xcopy SWBM\SVIHM_tabfile_seg*.tab MODFLOW /Y /I
 cd MODFLOW
 call ..\..\Bin\MODFLOW-NWT.exe SVIHM.nam
 
-:: Run gage2vol
-call conda activate SV_AEM_T2P
-python ..\..\Bin\GAGE2VOL.py Streamflow_FJ_SVIHM.dat 1990-09-30 5
-python ..\..\Bin\HOB2HDIFF.py HobData_SVIHM.dat
-conda deactivate
-
 cd ..\
